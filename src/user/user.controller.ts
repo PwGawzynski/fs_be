@@ -1,6 +1,9 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { UserObj } from '../decorators/user-obj.decorator';
+import { User } from './entities/user.entity';
 
 @Controller('users')
 export class UserController {
@@ -12,10 +15,10 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  // @Get('/test')
-  // @UseGuards(AuthGuard('jwt'))
-  // findAll(@UserObj() user: User) {
-  //   console.log(user);
-  //   return this.userService.findAll();
-  // }
+  @Get('/test')
+  @UseGuards(AuthGuard('jwt'))
+  findAll(@UserObj() user: User) {
+    console.log(user);
+    return 'ok';
+  }
 }
