@@ -60,7 +60,9 @@ export class AuthService {
           error: 'Invalid login data!!',
         });
       }
-      const token = await this.createToken(await this.generateToken(user));
+      const token = await this.createToken(
+        await AuthService.generateToken(user),
+      );
       // TODO on production change cookie setting to secure
       return res
         .cookie('jwt', token.accessToken, {
@@ -72,5 +74,18 @@ export class AuthService {
     } catch (e) {
       console.log(e);
     }
+  }
+  async logout(user: User, res: Response) {
+    try {
+      user.currentTokenId = null;
+      await user.save();
+      res
+        .clearCookie('jwt', {
+          secure: false,
+          domain: 'localhost',
+          httpOnly: true,
+        })
+        .json({ ok: true });
+    } catch (e) {}
   }
 }
