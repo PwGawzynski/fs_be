@@ -8,6 +8,7 @@ import { hashPwd } from '../utils/hash-pwd';
 @Injectable()
 export class UserService {
   async create(createUserDto: CreateUserDto): Promise<CreateUserDto> {
+    // TODO check before save if given user do not exist in db already
     const user = new User();
     user.login = createUserDto.login;
     user.name = createUserDto.name;
@@ -17,21 +18,5 @@ export class UserService {
     user.age = createUserDto.age;
     user.save();
     return createUserDto;
-  }
-
-  findAll() {
-    return `This action returns all user`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 }
