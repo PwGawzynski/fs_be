@@ -30,7 +30,7 @@ export class AuthService {
     };
   }
 
-  private async generateToken(user: User) {
+  private static async generateToken(user: User) {
     let token;
     let userWithThisToken = null;
     do {
