@@ -6,6 +6,7 @@ import { hashPwd } from '../utils/hash-pwd';
 import { v4 as uuid } from 'uuid';
 import { sign } from 'jsonwebtoken';
 import { JwtPayload } from './jwt-strateg';
+import { UniversalResponseObject } from '../../types';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
   } {
     const payload: JwtPayload = { id: currentTokenId };
     const expiresIn = 60 * 60 * 24;
+    // TODO change sign to .env var
     const accessToken = sign(
       payload,
       'aioubnfiunb[oupsbreiuhrbpsiabuhrguiabipuhgbaiupjhfr[gjhiudnjzpivvnbuipharjsoptiungabipuhefjo[auh[ouafioh' +
@@ -57,8 +59,9 @@ export class AuthService {
       });
       if (!user) {
         return res.json({
-          error: 'Invalid login data!!',
-        });
+          status: false,
+          message: 'Invalid login data!!',
+        } as UniversalResponseObject);
       }
       const token = await this.createToken(
         await AuthService.generateToken(user),
@@ -70,7 +73,7 @@ export class AuthService {
           domain: 'localhost',
           httpOnly: true,
         })
-        .json({ ok: true });
+        .json({ status: true } as UniversalResponseObject);
     } catch (e) {
       console.log(e);
     }
@@ -85,7 +88,7 @@ export class AuthService {
           domain: 'localhost',
           httpOnly: true,
         })
-        .json({ ok: true });
+        .json({ status: true } as UniversalResponseObject);
     } catch (e) {}
   }
 }
