@@ -1,12 +1,8 @@
-import { IsString } from 'class-validator';
+import { CreateUserDto } from '../../user/dto/create-user.dto';
+import { PickType } from '@nestjs/mapped-types';
 
-export class AuthLoginDto {
-  @IsString({
-    message: 'There is no any given login',
-  })
-  login: string;
-  @IsString({
-    message: 'There is no any given password',
-  })
-  password: string;
-}
+// This class is based on CreateUserDto 'case it uses the same fields and types as user entity but only two of em.
+export class AuthLoginDto extends PickType(CreateUserDto, [
+  'login',
+  'password',
+] as const) {}
