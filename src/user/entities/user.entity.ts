@@ -33,4 +33,9 @@ export class User extends BaseEntity {
     precision: 3,
   })
   age: number;
+
+  @Column({
+    length: 320,
+  })
+  email: string;
 }
