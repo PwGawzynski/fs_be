@@ -46,7 +46,6 @@ export class AuthService {
     } while (!!userWithThisToken);
     user.currentTokenId = token;
     await user.save();
-    console.log(token, 'sialalal');
     return token;
   }
   async login(req: AuthLoginDto, res: Response): Promise<any> {
