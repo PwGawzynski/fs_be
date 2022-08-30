@@ -22,6 +22,10 @@ export class CreateUserDto implements ICreateUserAsk {
 
   @IsNotEmpty()
   @IsString()
+  @Length(8, 20, {
+    message:
+      'Password should have between 8 and 20 characters, contains lower and upper case letters and some special characters',
+  })
   password: string;
 
   @IsNotEmpty()
