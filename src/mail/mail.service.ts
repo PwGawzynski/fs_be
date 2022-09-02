@@ -9,6 +9,11 @@ export class MailService {
       to,
       subject,
       html,
+      textEncoding: 'base64',
+      encoding: 'utf-8',
+      headers: {
+        'Content-Type': 'text/html',
+      },
     });
   }
 }
