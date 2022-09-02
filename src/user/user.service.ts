@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 import { hashPwd } from '../utils/hash-pwd';
 import { UniversalResponseObject } from '../../types';
 import { MailService } from '../mail/mail.service';
+import { registrationMail } from '../templates/email/registrationMail';
 
 @Injectable()
 export class UserService {
@@ -31,11 +32,12 @@ export class UserService {
     user.pwdHashed = hashPwd(createUserDto.password);
     user.age = createUserDto.age;
     user.email = createUserDto.email;
-    /*await this.mailService.sendMail(
+    // TODO change link to be account activate link
+    await this.mailService.sendMail(
       user.email,
-      'thanks for registration on FarmServiceTM',
-      'click on link below to activate your account',
-    );*/
+      'Thanks for registration on FarmServiceTM',
+      registrationMail(user, 'http://localhost:3000/desktop'),
+    );
     user.save();
     return {
       status: true,
