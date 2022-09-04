@@ -47,6 +47,7 @@ export class CreateUserDto implements ICreateUserAsk {
   @Max(999, {
     message: `Don't you to old to be a farmer ?`,
   })
+  @IsNotEmpty()
   age: number;
 
   @IsNotEmpty()
