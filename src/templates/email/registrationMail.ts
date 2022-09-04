@@ -1,5 +1,6 @@
 import { User } from '../../user/entities/user.entity';
 
+// it returns HTML template with data for registration email
 export const registrationMail = (usr: User, link: string) => {
   return `
   <doctype html>
