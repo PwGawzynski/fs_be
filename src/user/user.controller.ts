@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Param } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -11,8 +11,12 @@ export class UserController {
 
   @Post('/register')
   create(@Body() createUserDto: CreateUserDto) {
-    console.log(createUserDto);
     return this.userService.create(createUserDto);
+  }
+
+  @Get('/activate/:activateHash')
+  activateAccount(@Param('activateHash') activateHash: string) {
+    return this.userService.activate(activateHash);
   }
 
   @Get('/test')

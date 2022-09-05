@@ -38,4 +38,15 @@ export class User extends BaseEntity {
     length: 320,
   })
   email: string;
+
+  @Column({
+    default: null,
+    length: 36,
+  })
+  activateHash: string;
+
+  @Column({
+    default: false,
+  })
+  activated: boolean;
 }
