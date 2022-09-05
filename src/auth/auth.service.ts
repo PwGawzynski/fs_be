@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { AuthLoginDto } from './dto/auth-login-dto';
 import { Response } from 'express';
 import { User } from '../user/entities/user.entity';
@@ -7,21 +7,25 @@ import { v4 as uuid } from 'uuid';
 import { sign } from 'jsonwebtoken';
 import { JwtPayload } from './jwt-strateg';
 import { UniversalResponseObject } from '../../types';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
+  // constructor takes ConfigService with gives access to config data
+  constructor(
+    @Inject(ConfigService) private readonly ConfigService: ConfigService,
+  ) {}
+
+  // method creates authToken for cookie
   private createToken(currentTokenId: string): {
     accessToken: string;
     expiresIn: number;
   } {
     const payload: JwtPayload = { id: currentTokenId };
     const expiresIn = 60 * 60 * 24;
-    // TODO change sign to .env var
     const accessToken = sign(
       payload,
-      'aioubnfiunb[oupsbreiuhrbpsiabuhrguiabipuhgbaiupjhfr[gjhiudnjzpivvnbuipharjsoptiungabipuhefjo[auh[ouafioh' +
-        'eifojapoiusnrgfuhgirspujhgo[ghaiphjao[ijgpuihj[higrvaiounbphvipaunraiouji' +
-        'aighewraipuhnoughraiojieohufhaj[oiehfoagupgb`iuhagriuojg[ohiauhngb[ahguaoirhioagiuorabo[irsoahiub[rgfiaorhiugarhgu[',
+      this.ConfigService.get<string>('authStrategy.sign'),
       {
         expiresIn,
       },
@@ -48,6 +52,8 @@ export class AuthService {
     await user.save();
     return token;
   }
+
+  //login strategy
   async login(req: AuthLoginDto, res: Response): Promise<any> {
     try {
       const user = await User.findOne({
@@ -59,7 +65,13 @@ export class AuthService {
       if (!user) {
         return res.json({
           status: false,
-          message: 'Invalid login data!!',
+          message: "User doesn't exist",
+        } as UniversalResponseObject);
+      }
+      if (!user.activated) {
+        return res.json({
+          status: false,
+          message: 'Unactivated Account',
         } as UniversalResponseObject);
       }
       const token = await this.createToken(
@@ -72,11 +84,15 @@ export class AuthService {
           domain: 'localhost',
           httpOnly: true,
         })
-        .json({ status: true } as UniversalResponseObject);
+        .json({
+          status: true,
+        } as UniversalResponseObject);
     } catch (e) {
       console.log(e);
     }
   }
+
+  // used when logOut
   async logout(user: User, res: Response) {
     try {
       user.currentTokenId = null;
@@ -87,7 +103,9 @@ export class AuthService {
           domain: 'localhost',
           httpOnly: true,
         })
-        .json({ status: true } as UniversalResponseObject);
+        .json({
+          status: true,
+        } as UniversalResponseObject);
     } catch (e) {}
   }
 }
