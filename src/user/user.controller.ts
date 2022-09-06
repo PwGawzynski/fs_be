@@ -22,7 +22,6 @@ export class UserController {
   @Get('/test')
   @UseGuards(AuthGuard('jwt'))
   findAll(@UserObj() user: User) {
-    console.log(user);
     return 'ok';
   }
 }

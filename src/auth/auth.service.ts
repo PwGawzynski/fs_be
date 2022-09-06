@@ -79,11 +79,15 @@ export class AuthService {
       );
       // TODO on production change cookie setting to secure
       return res
-        .cookie('jwt', token.accessToken, {
+        .status(200)
+        .cookie(
+          'jwt',
+          token.accessToken /*{
           secure: false,
           domain: 'localhost',
           httpOnly: true,
-        })
+        }*/,
+        )
         .json({
           status: true,
         } as UniversalResponseObject);
