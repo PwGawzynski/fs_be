@@ -5,13 +5,15 @@ import {
   UseGuards,
   Get,
   Param,
-  Header,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { UserObj } from '../decorators/user-obj.decorator';
 import { User } from './entities/user.entity';
+import { Response } from 'express';
 
 @Controller('users')
 export class UserController {
@@ -33,12 +35,19 @@ export class UserController {
     return 'ok';
   }
 
+  // This method is in charge of sending userProfilePhoto
+  // which is sending with cache header for better optimisation
   @Get('/profile/photo')
   @UseGuards(AuthGuard('jwt'))
-  @Header('Cache-Control', 'private, max-age=604800')
-  //TODO chnage photo name in files that it can be etag
-  @Header('ETag', 'filename')
-  async sendUserPhoto(@UserObj() user: User) {
+  async sendUserPhoto(
+    @UserObj() user: User,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    // set headers for cache control, Etag is controlSum
+    res.set({
+      'Cache-Control': 'private, max-age=604800',
+      ETag: user.profilePhotoPath,
+    });
     return this.userService.getUserPhoto(user);
   }
 }
