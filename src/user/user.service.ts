@@ -112,7 +112,9 @@ export class UserService {
         '/',
         this.ConfigService.get<string>('filesPaths.userProfilePhotos'),
         '/',
-        user.id + '.jpg',
+        user.id,
+        '/',
+        user.profilePhotoPath + '.jpg',
       ),
     );
     return new StreamableFile(file);
