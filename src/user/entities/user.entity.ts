@@ -49,4 +49,10 @@ export class User extends BaseEntity {
     default: false,
   })
   activated: boolean;
+
+  @Column({
+    length: 36,
+    default: null,
+  })
+  profilePhotoPath: string;
 }

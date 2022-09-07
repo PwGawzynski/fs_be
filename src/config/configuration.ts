@@ -10,4 +10,7 @@ export default () => ({
       'o8vhkjhkvitydfiycvghfxaerwtdyicghkxfrst' +
       'e56r6iyufcgctydt67chkvjjl;uiguoifyftyd6i',
   },
+  filesPaths: {
+    userProfilePhotos: '/src/files/usersData',
+  },
 });
