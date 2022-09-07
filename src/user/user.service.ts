@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, StreamableFile } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { v4 as uuid } from 'uuid';
@@ -6,10 +6,16 @@ import { hashPwd } from '../utils/hash-pwd';
 import { UniversalResponseObject } from '../../types';
 import { MailService } from '../mail/mail.service';
 import { registrationMail } from '../templates/email/registrationMail';
+import { createReadStream } from 'fs';
+import * as path from 'path';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
-  constructor(@Inject(MailService) private mailService: MailService) {}
+  constructor(
+    @Inject(MailService) private mailService: MailService,
+    @Inject(ConfigService) private readonly ConfigService: ConfigService,
+  ) {}
 
   // sets up new User object and tries to find unused id for it and unused activateHash
   private static async _setUpNewUser(createUserDto: CreateUserDto) {
@@ -88,15 +94,27 @@ export class UserService {
         status: false,
       } as UniversalResponseObject;
     user.activated = true;
-    console.log(
-      (
-        await User.update(
-          {
-            id: user.id,
-          },
-          user,
-        )
-      ).affected,
+    // TODO reformat !!
+    (
+      await User.update(
+        {
+          id: user.id,
+        },
+        user,
+      )
+    ).affected;
+  }
+
+  getUserPhoto(user: User) {
+    const file = createReadStream(
+      path.join(
+        process.cwd(),
+        '/',
+        this.ConfigService.get<string>('filesPaths.userProfilePhotos'),
+        '/',
+        user.id + '.jpg',
+      ),
     );
+    return new StreamableFile(file);
   }
 }
