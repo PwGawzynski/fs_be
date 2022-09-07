@@ -11,6 +11,6 @@ export default () => ({
       'e56r6iyufcgctydt67chkvjjl;uiguoifyftyd6i',
   },
   filesPaths: {
-    userProfilePhotos: '/src/files/userProfilePhotos',
+    userProfilePhotos: '/src/files/usersData',
   },
 });
