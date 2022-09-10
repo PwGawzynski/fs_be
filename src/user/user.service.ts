@@ -106,6 +106,9 @@ export class UserService {
   }
 
   getUserPhoto(user: User) {
+    // Returns userProfile photo from file system
+    // Path si constructed based on user id and userProfilePath
+    // because it is obligated for creating ETag header.
     const file = createReadStream(
       path.join(
         process.cwd(),
