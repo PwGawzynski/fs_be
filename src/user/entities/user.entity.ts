@@ -1,23 +1,17 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Account } from './account.entity';
 
 @Entity()
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
-  @Column({
-    length: 320,
-  })
-  login: string;
-
-  @Column()
-  pwdHashed: string;
-
-  @Column({
-    default: null,
-  })
-  //TODO change to array
-  currentTokenId: string | null;
 
   @Column({
     length: 255,
@@ -34,25 +28,7 @@ export class User extends BaseEntity {
   })
   age: number;
 
-  @Column({
-    length: 320,
-  })
-  email: string;
-
-  @Column({
-    default: null,
-    length: 36,
-  })
-  activateHash: string;
-
-  @Column({
-    default: false,
-  })
-  activated: boolean;
-
-  @Column({
-    length: 36,
-    default: null,
-  })
-  profilePhotoPath: string;
+  @OneToOne(() => Account)
+  @JoinColumn()
+  account: Account;
 }
