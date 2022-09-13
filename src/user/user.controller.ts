@@ -14,6 +14,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { UserObj } from '../decorators/user-obj.decorator';
 import { User } from './entities/user.entity';
 import { Response } from 'express';
+import { RolesGuard } from '../Guards/RolesGuard';
+import { AllowOnlyIf } from '../decorators/AllowOnlyIf.decorator';
 
 @Controller('users')
 export class UserController {
@@ -38,7 +40,8 @@ export class UserController {
   // This method is in charge of sending userProfilePhoto
   // which is sending with cache header for better optimisation
   @Get('/profile/photo')
-  @UseGuards(AuthGuard('jwt'))
+  @AllowOnlyIf('owner', 'worker')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   async sendUserPhoto(
     @UserObj() user: User,
     @Res({ passthrough: true }) res: Response,
