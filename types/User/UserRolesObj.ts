@@ -1,4 +1,4 @@
 export interface UserRolesObj {
-  IsWorker: boolean;
-  IsOwner: boolean;
+  worker: boolean;
+  owner: boolean;
 }

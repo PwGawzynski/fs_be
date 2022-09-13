@@ -97,8 +97,8 @@ export class AuthService {
       if (!user) return;
       // to prevent leaked id of  user's roles entity
       const resRoles = {
-        IsOwner: user?.roles.IsOwner,
-        IsWorker: user?.roles.IsWorker,
+        owner: user?.roles.owner,
+        worker: user?.roles.worker,
       } as UserRolesObj;
 
       const token = await this.createToken(

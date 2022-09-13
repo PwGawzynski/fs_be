@@ -8,10 +8,10 @@ export class Roles extends BaseEntity {
   @Column({
     default: false,
   })
-  IsOwner: boolean;
+  owner: boolean;
 
   @Column({
     default: false,
   })
-  IsWorker: boolean;
+  worker: boolean;
 }
