@@ -33,7 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           currentTokenId: payload.id,
         },
       },
-      relations: ['account'],
+      relations: ['account', 'roles'],
     });
     if (!user) {
       return done(new UnauthorizedException(), false);
