@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Account } from './account.entity';
+import { Roles } from './roles.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -31,4 +32,8 @@ export class User extends BaseEntity {
   @OneToOne(() => Account)
   @JoinColumn()
   account: Account;
+
+  @OneToOne(() => Roles)
+  @JoinColumn()
+  roles: Roles;
 }
