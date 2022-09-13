@@ -46,7 +46,7 @@ export class UserController {
     // set headers for cache control, Etag is controlSum
     res.set({
       'Cache-Control': 'private, max-age=604800',
-      ETag: user.profilePhotoPath,
+      ETag: user.account.profilePhotoPath,
     });
     return this.userService.getUserPhoto(user);
   }

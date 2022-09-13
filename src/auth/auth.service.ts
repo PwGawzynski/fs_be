@@ -44,11 +44,16 @@ export class AuthService {
       console.log(token);
       userWithThisToken = await User.findOne({
         where: {
-          currentTokenId: token,
+          account: {
+            currentTokenId: token,
+          },
         },
+        relations: ['account'],
       });
     } while (!!userWithThisToken);
-    user.currentTokenId = token;
+    user.account.currentTokenId = token;
+    console.log(user, 'GEN TOKEN');
+    await user.account.save();
     await user.save();
     return token;
   }
@@ -58,9 +63,12 @@ export class AuthService {
     try {
       const user = await User.findOne({
         where: {
-          login: req.login,
-          pwdHashed: hashPwd(req.password),
+          account: {
+            login: req.login,
+            pwdHashed: hashPwd(req.password),
+          },
         },
+        relations: ['account'],
       });
       if (!user) {
         return res.json({
@@ -68,7 +76,7 @@ export class AuthService {
           message: "User doesn't exist",
         } as UniversalResponseObject);
       }
-      if (!user.activated) {
+      if (!user.account.activated) {
         return res.json({
           status: false,
           message: 'Unactivated Account',
@@ -99,7 +107,7 @@ export class AuthService {
   // used when logOut
   async logout(user: User, res: Response) {
     try {
-      user.currentTokenId = null;
+      user.account.currentTokenId = null;
       await user.save();
       res
         .clearCookie('jwt', {
