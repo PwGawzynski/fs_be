@@ -6,7 +6,7 @@ import { hashPwd } from '../utils/hash-pwd';
 import { v4 as uuid } from 'uuid';
 import { sign } from 'jsonwebtoken';
 import { JwtPayload } from './jwt-strateg';
-import { UniversalResponseObject } from '../../types';
+import { UniversalResponseObject, UserRolesObj } from '../../types';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -58,30 +58,49 @@ export class AuthService {
     return token;
   }
 
+  private static async validateUser(
+    req: AuthLoginDto,
+    res: Response,
+  ): Promise<User | undefined> {
+    const user = await User.findOne({
+      where: {
+        account: {
+          login: req.login,
+          pwdHashed: hashPwd(req.password),
+        },
+      },
+      relations: ['account', 'roles'],
+    });
+
+    if (!user) {
+      res.json({
+        status: false,
+        message: "User doesn't exist",
+      } as UniversalResponseObject);
+      return undefined;
+    }
+    if (!user.account.activated) {
+      res.json({
+        status: false,
+        message: 'Unactivated Account',
+      } as UniversalResponseObject);
+      return undefined;
+    }
+
+    return user;
+  }
+
   //login strategy
   async login(req: AuthLoginDto, res: Response): Promise<any> {
     try {
-      const user = await User.findOne({
-        where: {
-          account: {
-            login: req.login,
-            pwdHashed: hashPwd(req.password),
-          },
-        },
-        relations: ['account'],
-      });
-      if (!user) {
-        return res.json({
-          status: false,
-          message: "User doesn't exist",
-        } as UniversalResponseObject);
-      }
-      if (!user.account.activated) {
-        return res.json({
-          status: false,
-          message: 'Unactivated Account',
-        } as UniversalResponseObject);
-      }
+      const user = await AuthService.validateUser(req, res);
+      if (!user) return;
+      // to prevent leaked id of  user's roles entity
+      const resRoles = {
+        IsOwner: user?.roles.IsOwner,
+        IsWorker: user?.roles.IsWorker,
+      } as UserRolesObj;
+
       const token = await this.createToken(
         await AuthService.generateToken(user),
       );
@@ -98,6 +117,7 @@ export class AuthService {
         )
         .json({
           status: true,
+          data: resRoles,
         } as UniversalResponseObject);
     } catch (e) {
       console.log(e);
