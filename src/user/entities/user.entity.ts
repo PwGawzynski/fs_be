@@ -3,7 +3,6 @@ import {
   Column,
   Entity,
   JoinColumn,
-  JoinTable,
   ManyToMany,
   OneToMany,
   OneToOne,
@@ -44,9 +43,8 @@ export class User extends BaseEntity {
   roles: Roles;
 
   @ManyToMany(() => Company, (company) => company.owners)
-  @JoinTable()
   ownedCompanies: Company;
-  
+
   @OneToMany(() => Task, (task) => task.purchaser)
   @JoinColumn()
   tasks: Task[];
