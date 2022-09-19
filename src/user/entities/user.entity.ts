@@ -13,6 +13,7 @@ import { Account } from './account.entity';
 import { Roles } from './roles.entity';
 import { Company } from '../../company/entities/company.entity';
 import { Task } from '../../tasks/entities/task.entity';
+import { Field } from '../../field/entities/field.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -49,4 +50,8 @@ export class User extends BaseEntity {
   @OneToMany(() => Task, (task) => task.purchaser)
   @JoinColumn()
   tasks: Task[];
+
+  @OneToMany(() => Field, (field) => field.owner)
+  @JoinColumn()
+  ownedFields: Field[];
 }
