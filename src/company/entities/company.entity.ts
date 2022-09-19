@@ -28,4 +28,3 @@ export class Company {
   @JoinColumn()
   machines: Machine[];
 }
-792497347;
