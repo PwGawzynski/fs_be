@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Machine } from '../../machines/entities/machine.entity';
 import { User } from '../../user/entities/user.entity';
+import { Task } from '../../tasks/entities/task.entity';
 
 @Entity()
 export class Company {
@@ -34,4 +35,7 @@ export class Company {
   @ManyToMany(() => User, (user) => user.ownedCompanies)
   @JoinTable()
   owners: User[];
+  @OneToMany(() => Task, (task) => task.purchaser)
+  @JoinColumn()
+  tasks: Task[];
 }
