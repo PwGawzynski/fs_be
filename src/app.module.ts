@@ -8,6 +8,7 @@ import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 import { CompanyModule } from './company/company.module';
 import { MachinesModule } from './machines/machines.module';
+import { TasksModule } from './tasks/tasks.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -34,6 +35,7 @@ import configuration from './config/configuration';
     }),
     CompanyModule,
     MachinesModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
