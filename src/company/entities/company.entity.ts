@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Machine } from '../../machines/entities/machine.entity';
+import { Task } from '../../tasks/entities/task.entity';
 
 @Entity()
 export class Company {
@@ -27,4 +28,8 @@ export class Company {
   @OneToMany(() => Machine, (machine) => machine.belongToCompany)
   @JoinColumn()
   machines: Machine[];
+
+  @OneToMany(() => Task, (task) => task.purchaser)
+  @JoinColumn()
+  tasks: Task[];
 }
