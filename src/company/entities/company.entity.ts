@@ -2,10 +2,13 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Machine } from '../../machines/entities/machine.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity()
 export class Company {
@@ -27,4 +30,8 @@ export class Company {
   @OneToMany(() => Machine, (machine) => machine.belongToCompany)
   @JoinColumn()
   machines: Machine[];
+
+  @ManyToMany(() => User, (user) => user.ownedCompanies)
+  @JoinTable()
+  owners: User[];
 }
