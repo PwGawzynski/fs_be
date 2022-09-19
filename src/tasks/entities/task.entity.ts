@@ -2,6 +2,8 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -36,4 +38,28 @@ export class Task {
   })
   @JoinColumn()
   company: Company;
+
+  @ManyToMany(() => User)
+  @JoinTable()
+  workers: User[];
+
+  @Column({
+    nullable: false,
+  })
+  startTime: Date;
+
+  @Column({
+    nullable: false,
+  })
+  endTIme: Date;
+
+  @Column({
+    default: false,
+  })
+  isDone: boolean;
+
+  @Column({
+    nullable: true,
+  })
+  performanceDay: Date;
 }
