@@ -10,6 +10,7 @@ import { createReadStream } from 'fs';
 import * as path from 'path';
 import { ConfigService } from '@nestjs/config';
 import { Account } from './entities/account.entity';
+import { Roles } from './entities/roles.entity';
 
 @Injectable()
 export class UserService {
@@ -20,6 +21,9 @@ export class UserService {
 
   // sets up new User object and tries to find unused id for it and unused activateHash
   private static async _setUpNewUser(createUserDto: CreateUserDto) {
+    const userRoles = new Roles();
+    userRoles.worker = createUserDto.roles.worker;
+    userRoles.owner = createUserDto.roles.owner;
     const userAccount = new Account();
     userAccount.login = createUserDto.login;
     userAccount.pwdHashed = hashPwd(createUserDto.password);
@@ -29,6 +33,7 @@ export class UserService {
     user.surname = createUserDto.surname;
     user.age = createUserDto.age;
     user.account = userAccount;
+    user.roles = userRoles;
     do {
       user.id = uuid();
       user.account.activateHash = uuid();
@@ -45,6 +50,7 @@ export class UserService {
         relations: ['account'],
       })
     );
+    await userRoles.save();
     await userAccount.save();
     return user;
   }

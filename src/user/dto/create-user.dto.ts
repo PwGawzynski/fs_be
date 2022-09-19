@@ -8,8 +8,9 @@ import {
   IsAscii,
   Matches,
   IsNotEmpty,
+  IsObject,
 } from 'class-validator';
-import { ICreateUserAsk } from '../../../types';
+import { ICreateUserAsk, UserRolesObj } from '../../../types';
 
 export class CreateUserDto implements ICreateUserAsk {
   @IsAscii()
@@ -59,4 +60,8 @@ export class CreateUserDto implements ICreateUserAsk {
     message: 'Given email is incorrect !!',
   })
   email: string;
+
+  @IsNotEmpty()
+  @IsObject()
+  roles: UserRolesObj;
 }
