@@ -3,11 +3,13 @@ import {
   Column,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Account } from './account.entity';
 import { Roles } from './roles.entity';
+import { Task } from '../../tasks/entities/task.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -36,4 +38,8 @@ export class User extends BaseEntity {
   @OneToOne(() => Roles)
   @JoinColumn()
   roles: Roles;
+
+  @OneToMany(() => Task, (task) => task.purchaser)
+  @JoinColumn()
+  tasks: Task[];
 }
