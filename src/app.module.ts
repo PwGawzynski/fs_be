@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CompanyModule } from './company/company.module';
 import { MachinesModule } from './machines/machines.module';
 import { TasksModule } from './tasks/tasks.module';
+import { FieldModule } from './field/field.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -36,6 +37,7 @@ import configuration from './config/configuration';
     CompanyModule,
     MachinesModule,
     TasksModule,
+    FieldModule,
   ],
   controllers: [AppController],
   providers: [AppService],
