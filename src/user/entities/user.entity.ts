@@ -3,12 +3,15 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Account } from './account.entity';
 import { Roles } from './roles.entity';
+import { Company } from '../../company/entities/company.entity';
 import { Task } from '../../tasks/entities/task.entity';
 
 @Entity()
@@ -39,6 +42,10 @@ export class User extends BaseEntity {
   @JoinColumn()
   roles: Roles;
 
+  @ManyToMany(() => Company, (company) => company.owners)
+  @JoinTable()
+  ownedCompanies: Company;
+  
   @OneToMany(() => Task, (task) => task.purchaser)
   @JoinColumn()
   tasks: Task[];
