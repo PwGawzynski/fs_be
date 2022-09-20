@@ -47,5 +47,5 @@ export class Machine extends BaseEntity {
     nullable: false,
   })
   @JoinColumn()
-  belongToCompany: string;
+  belongToCompany: Company;
 }
