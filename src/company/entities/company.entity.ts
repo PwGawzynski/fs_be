@@ -29,6 +29,11 @@ export class Company extends BaseEntity {
   })
   description: string;
 
+  @Column({
+    nullable: false,
+  })
+  createdAt: Date;
+
   @OneToMany(() => Machine, (machine) => machine.belongToCompany)
   @JoinColumn()
   machines: Machine[];
@@ -36,6 +41,7 @@ export class Company extends BaseEntity {
   @ManyToMany(() => User, (user) => user.ownedCompanies)
   @JoinTable()
   owners: User[];
+
   @OneToMany(() => Task, (task) => task.purchaser)
   @JoinColumn()
   tasks: Task[];
