@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   Entity,
   JoinColumn,
@@ -8,9 +9,15 @@ import {
 import { User } from '../../user/entities/user.entity';
 
 @Entity()
-export class Field {
+export class Field extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({
+    nullable: true,
+    length: 300,
+  })
+  name: string;
 
   @Column({
     nullable: false,
