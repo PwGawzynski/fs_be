@@ -35,6 +35,13 @@ export class Field extends BaseEntity {
   })
   longitude: number;
 
+  @Column({
+    type: 'float',
+    precision: 5,
+    scale: 4,
+  })
+  area: number;
+
   @ManyToOne(() => User)
   @JoinColumn()
   owner: User;
