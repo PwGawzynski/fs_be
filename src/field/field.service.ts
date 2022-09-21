@@ -10,6 +10,11 @@ import { NewFieldRes } from '../../types';
 export class FieldService {
   constructor(private readonly httpService: HttpService) {}
 
+  // TODO implement api call to get area
+  private _getFieldArea(fieldID: string) {
+    return 2.31;
+  }
+
   private async _assignDataToNewField(
     data: CreateFieldDto,
     user: User,
@@ -34,6 +39,7 @@ export class FieldService {
         ? plotId[1]
         : undefined;
     field.owner = user;
+    field.area = this._getFieldArea('plotId');
     return field.plotId ? field : undefined;
   }
 
