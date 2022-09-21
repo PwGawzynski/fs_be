@@ -19,7 +19,25 @@ export class CreateTaskDto {
   @IsOptional()
   description: string;
 
-  @IsDate({ message: `Task's Performance day must be a string type` })
-  @IsNotEmpty({ message: `Task's performance data myst be given` })
+  // Purchaser with will be signed to task is identified by he's id number,
+  // is optional because it be signed to user who causer creation
+  @IsOptional()
+  @IsNotEmpty({
+    message: 'If userID is given, it cannot be empty',
+  })
+  @MaxLength(36)
+  purchaserID: string;
+
+  // Company with will be signed to task is identified by he's id number
+  @IsNotEmpty({
+    message: 'Company must be chosen for any task',
+  })
+  @MaxLength(36)
+  companyID: string;
+
+  @IsOptional()
+  @IsDate({
+    message: 'If Performance date is given, it cannot be empty',
+  })
   performanceDay: Date;
 }
