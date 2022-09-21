@@ -35,22 +35,25 @@ export class Task extends BaseEntity {
   purchaser: User;
 
   @ManyToOne(() => Company, (company) => company.tasks, {
-    nullable: true,
+    // if task comes from company or from client it always should have company signed
+    nullable: false,
   })
   @JoinColumn()
   company: Company;
 
-  @ManyToMany(() => User)
+  @ManyToMany(() => User, {
+    nullable: true,
+  })
   @JoinTable()
   workers: User[];
 
   @Column({
-    nullable: false,
+    default: () => 'CURRENT_TIMESTAMP',
   })
   startTime: Date;
 
   @Column({
-    nullable: false,
+    default: null,
   })
   endTIme: Date;
 
