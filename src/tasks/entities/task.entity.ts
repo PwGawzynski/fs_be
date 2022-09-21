@@ -66,4 +66,11 @@ export class Task extends BaseEntity {
     nullable: true,
   })
   performanceDay: Date;
+
+  @Column({
+    default: null,
+    nullable: true,
+    comment: 'Measured time taken to complete task in ms',
+  })
+  durationTime: number;
 }
