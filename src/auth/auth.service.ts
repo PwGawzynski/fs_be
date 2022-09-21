@@ -6,7 +6,7 @@ import { hashPwd } from '../utils/hash-pwd';
 import { v4 as uuid } from 'uuid';
 import { sign } from 'jsonwebtoken';
 import { JwtPayload } from './jwt-strateg';
-import { UniversalResponseObject } from '../../types';
+import { UniversalResponseObject, UserRolesObj } from '../../types';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -44,48 +44,80 @@ export class AuthService {
       console.log(token);
       userWithThisToken = await User.findOne({
         where: {
-          currentTokenId: token,
+          account: {
+            currentTokenId: token,
+          },
         },
+        relations: ['account'],
       });
     } while (!!userWithThisToken);
-    user.currentTokenId = token;
+    user.account.currentTokenId = token;
+    console.log(user, 'GEN TOKEN');
+    await user.account.save();
     await user.save();
     return token;
+  }
+
+  private static async validateUser(
+    req: AuthLoginDto,
+    res: Response,
+  ): Promise<User | undefined> {
+    const user = await User.findOne({
+      where: {
+        account: {
+          login: req.login,
+          pwdHashed: hashPwd(req.password),
+        },
+      },
+      relations: ['account', 'roles'],
+    });
+
+    if (!user) {
+      res.json({
+        status: false,
+        message: "User doesn't exist",
+      } as UniversalResponseObject);
+      return undefined;
+    }
+    if (!user.account.activated) {
+      res.json({
+        status: false,
+        message: 'Unactivated Account',
+      } as UniversalResponseObject);
+      return undefined;
+    }
+
+    return user;
   }
 
   //login strategy
   async login(req: AuthLoginDto, res: Response): Promise<any> {
     try {
-      const user = await User.findOne({
-        where: {
-          login: req.login,
-          pwdHashed: hashPwd(req.password),
-        },
-      });
-      if (!user) {
-        return res.json({
-          status: false,
-          message: "User doesn't exist",
-        } as UniversalResponseObject);
-      }
-      if (!user.activated) {
-        return res.json({
-          status: false,
-          message: 'Unactivated Account',
-        } as UniversalResponseObject);
-      }
+      const user = await AuthService.validateUser(req, res);
+      if (!user) return;
+      // to prevent leaked id of  user's roles entity
+      const resRoles = {
+        owner: user?.roles.owner,
+        worker: user?.roles.worker,
+      } as UserRolesObj;
+
       const token = await this.createToken(
         await AuthService.generateToken(user),
       );
       // TODO on production change cookie setting to secure
       return res
-        .cookie('jwt', token.accessToken, {
+        .status(200)
+        .cookie(
+          'jwt',
+          token.accessToken /*{
           secure: false,
           domain: 'localhost',
           httpOnly: true,
-        })
+        }*/,
+        )
         .json({
           status: true,
+          data: resRoles,
         } as UniversalResponseObject);
     } catch (e) {
       console.log(e);
@@ -95,7 +127,7 @@ export class AuthService {
   // used when logOut
   async logout(user: User, res: Response) {
     try {
-      user.currentTokenId = null;
+      user.account.currentTokenId = null;
       await user.save();
       res
         .clearCookie('jwt', {

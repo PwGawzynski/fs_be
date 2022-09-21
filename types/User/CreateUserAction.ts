@@ -1,3 +1,5 @@
+import { UserRolesObj } from './UserRolesObj';
+
 export interface ICreateUserAsk {
   login: string;
   password: string;
@@ -5,4 +7,5 @@ export interface ICreateUserAsk {
   surname: string;
   age: number;
   email: string;
+  roles: UserRolesObj;
 }
