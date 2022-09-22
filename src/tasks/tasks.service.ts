@@ -6,6 +6,7 @@ import { Company } from '../company/entities/company.entity';
 import { UniversalResponseObject } from '../../types';
 import { UpdateTaskAddWorkersDto } from './dto/update-task.dto';
 import { In } from 'typeorm';
+import { Worker } from '../worker/entities/worker.entity';
 
 @Injectable()
 export class TasksService {
@@ -52,12 +53,14 @@ export class TasksService {
   // TODO check if given worker is signed to company
   private async _findAndSignWorkers(
     data: UpdateTaskAddWorkersDto,
+    user: User,
   ): Promise<Task | UniversalResponseObject> {
     // TODO think if it is possible to modify tasks with dont below to user
     const task = await Task.findOne({
       where: {
         id: data.TaskId,
       },
+      relations: ['company'],
     });
     if (!task)
       return {
@@ -65,23 +68,60 @@ export class TasksService {
         message: 'Cannot find task with given id',
       } as UniversalResponseObject;
 
-    const workers = await User.find({
+    const userWCompanies = await User.findOne({
       where: {
-        id: In(data.workersIDS),
+        id: user.id,
       },
+      relations: ['ownedCompanies'],
+    });
+    console.log(userWCompanies);
+    if (
+      !userWCompanies.ownedCompanies.filter(
+        (company) => company.id === task.company.id,
+      ).length
+    )
+      return {
+        status: false,
+        message:
+          'Ask causer is not over of company with is signed to this task',
+      } as UniversalResponseObject;
+
+    const workers = await Worker.find({
+      where: {
+        user: {
+          id: In(data.workersIDS),
+        },
+      },
+      relations: ['user', 'isWorkerAtCompany'],
     });
 
     const notInDb = (
       data.workersIDS.map(
-        (id) => !!workers.find((worker) => worker.id === id) || id,
+        (id) => !!workers.find((worker) => worker.user.id === id) || id,
       ) as Array<boolean | string>
     ).filter((e) => typeof e !== 'boolean');
-    console.log(notInDb.length);
+
     if (notInDb.length)
       return {
         status: false,
-        message: "Users with given ids haven't been found " + notInDb.join(','),
+        message:
+          "Users (workers) with given ids haven't been found " +
+          notInDb.join(','),
       } as UniversalResponseObject;
+    console.log(workers);
+    const outOfTaskCompany = workers
+      .filter((worker) => !(worker.isWorkerAtCompany.id === task.company.id))
+      .map((worker) => worker.id);
+
+    if (outOfTaskCompany.length)
+      return {
+        status: false,
+        message:
+          "'Workers with these id's: " +
+          outOfTaskCompany.join(',') +
+          ' are employed in company with is not assigned to given task',
+      } as UniversalResponseObject;
+    console.log(outOfTaskCompany, 'OUT OF COMPANY');
     task.workers = workers;
     return task;
   }
@@ -99,8 +139,8 @@ export class TasksService {
     } as UniversalResponseObject;
   }
 
-  async signWorkers(data: UpdateTaskAddWorkersDto) {
-    const updatedTask = await this._findAndSignWorkers(data);
+  async signWorkers(data: UpdateTaskAddWorkersDto, user: User) {
+    const updatedTask = await this._findAndSignWorkers(data, user);
     console.log(updatedTask);
     if (!(updatedTask instanceof Task)) return updatedTask;
     updatedTask.save();
