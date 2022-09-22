@@ -22,7 +22,7 @@ export class TasksController {
   @Put('/add-workers')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @AllowOnlyIf('owner')
-  updateWorkers(@Body() data: UpdateTaskAddWorkersDto) {
-    return this.tasksService.signWorkers(data);
+  updateWorkers(@Body() data: UpdateTaskAddWorkersDto, @UserObj() user: User) {
+    return this.tasksService.signWorkers(data, user);
   }
 }
