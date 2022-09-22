@@ -10,13 +10,10 @@ import { Worker } from '../worker/entities/worker.entity';
 
 @Injectable()
 export class TasksService {
-  // TODO change it because it might cause issues cause of instance per ask
-  private rejectionCause: string;
-
-  private async _assignDataToTask(
+  private static async _assignDataToTask(
     data: CreateTaskDto,
     user: User,
-  ): Promise<Task | undefined> {
+  ): Promise<Task | UniversalResponseObject> {
     const task = new Task();
     task.name = data.name;
     task.description = data.description ? data.description : null;
@@ -27,22 +24,30 @@ export class TasksService {
           id: data.purchaserID,
         },
       });
-      if (!purchaser) {
-        this.rejectionCause = 'Cannot find given purchaser in DB';
-        return undefined;
-      }
+      if (!purchaser)
+        return {
+          status: false,
+          message: 'Cannot find given purchaser in DB',
+        } as UniversalResponseObject;
       task.purchaser = purchaser;
     }
-    console.log(task.purchaser);
     const company = await Company.findOne({
       where: {
         id: data.companyID,
       },
     });
-    if (!company) {
-      this.rejectionCause = 'Cannot find given company';
-      return undefined;
-    }
+    if (!company)
+      return {
+        status: false,
+        message: 'Cannot find given company',
+      } as UniversalResponseObject;
+
+    if (!(user.id in company.owners.map((owner) => owner.id)))
+      return {
+        status: false,
+        message: 'Request causer is not owner of given company',
+      } as UniversalResponseObject;
+
     task.company = company;
 
     task.performanceDay = data.performanceDay ? data.performanceDay : null;
@@ -50,12 +55,11 @@ export class TasksService {
     return task;
   }
 
-  // TODO check if given worker is signed to company
+  // TODO cleanUp fnBelow
   private async _findAndSignWorkers(
     data: UpdateTaskAddWorkersDto,
     user: User,
   ): Promise<Task | UniversalResponseObject> {
-    // TODO think if it is possible to modify tasks with dont below to user
     const task = await Task.findOne({
       where: {
         id: data.TaskId,
@@ -127,12 +131,8 @@ export class TasksService {
   }
 
   async createNewTask(data: CreateTaskDto, user: User) {
-    const createdTask = await this._assignDataToTask(data, user);
-    if (!createdTask)
-      return {
-        status: false,
-        message: this.rejectionCause,
-      } as UniversalResponseObject;
+    const createdTask = await TasksService._assignDataToTask(data, user);
+    if (!(createdTask instanceof Task)) return createdTask;
     createdTask.save();
     return {
       status: true,
