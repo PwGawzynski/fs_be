@@ -33,7 +33,7 @@ export class Machine extends BaseEntity {
 
   @Column({
     type: 'float',
-    precision: 5,
+    precision: 7,
     scale: 2,
     default: 0,
   })

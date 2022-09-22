@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, Length } from 'class-validator';
 
 export class CreateFieldDto {
   @IsNotEmpty()
@@ -13,5 +13,9 @@ export class CreateFieldDto {
   longitude: number;
 
   @IsOptional()
+  @Length(1, 300, {
+    message:
+      'Name must be at least one character  and max 300 characters length',
+  })
   name: string;
 }

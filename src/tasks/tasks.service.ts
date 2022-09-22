@@ -10,27 +10,25 @@ import { Worker } from '../worker/entities/worker.entity';
 
 @Injectable()
 export class TasksService {
-  private static async _assignDataToTask(
+  private static async _isPurchaserInDB(
     data: CreateTaskDto,
-    user: User,
-  ): Promise<Task | UniversalResponseObject> {
-    const task = new Task();
-    task.name = data.name;
-    task.description = data.description ? data.description : null;
-    if (!data.purchaserID) task.purchaser = user;
-    else {
-      const purchaser = await User.findOne({
-        where: {
-          id: data.purchaserID,
-        },
-      });
-      if (!purchaser)
-        return {
-          status: false,
-          message: 'Cannot find given purchaser in DB',
-        } as UniversalResponseObject;
-      task.purchaser = purchaser;
-    }
+  ): Promise<User | UniversalResponseObject> {
+    const purchaser = await User.findOne({
+      where: {
+        id: data.purchaserID,
+      },
+    });
+    if (!purchaser)
+      return {
+        status: false,
+        message: 'Cannot find given purchaser in DB',
+      } as UniversalResponseObject;
+    return purchaser;
+  }
+
+  private static async _isCompanyInDB(
+    data: CreateTaskDto,
+  ): Promise<Company | UniversalResponseObject> {
     const company = await Company.findOne({
       where: {
         id: data.companyID,
@@ -41,24 +39,23 @@ export class TasksService {
         status: false,
         message: 'Cannot find given company',
       } as UniversalResponseObject;
+    return company;
+  }
 
+  private static async _checkIfNotOwner(
+    user: User,
+    company: Company,
+  ): Promise<UniversalResponseObject | false> {
     if (!(user.id in company.owners.map((owner) => owner.id)))
       return {
         status: false,
         message: 'Request causer is not owner of given company',
       } as UniversalResponseObject;
-
-    task.company = company;
-
-    task.performanceDay = data.performanceDay ? data.performanceDay : null;
-
-    return task;
+    return false;
   }
 
-  // TODO cleanUp fnBelow
-  private async _findAndSignWorkers(
+  private static async _findTask(
     data: UpdateTaskAddWorkersDto,
-    user: User,
   ): Promise<Task | UniversalResponseObject> {
     const task = await Task.findOne({
       where: {
@@ -71,14 +68,20 @@ export class TasksService {
         status: false,
         message: 'Cannot find task with given id',
       } as UniversalResponseObject;
+    return task;
+  }
 
+  private static async _findUserCompanies(
+    data: UpdateTaskAddWorkersDto,
+    user: User,
+    task: Task,
+  ): Promise<User | UniversalResponseObject> {
     const userWCompanies = await User.findOne({
       where: {
         id: user.id,
       },
       relations: ['ownedCompanies'],
     });
-    console.log(userWCompanies);
     if (
       !userWCompanies.ownedCompanies.filter(
         (company) => company.id === task.company.id,
@@ -89,7 +92,13 @@ export class TasksService {
         message:
           'Ask causer is not over of company with is signed to this task',
       } as UniversalResponseObject;
+    return userWCompanies;
+  }
 
+  private static async _notWorkerInDB(
+    data: UpdateTaskAddWorkersDto,
+    task: Task,
+  ): Promise<Worker[] | UniversalResponseObject> {
     const workers = await Worker.find({
       where: {
         user: {
@@ -98,7 +107,6 @@ export class TasksService {
       },
       relations: ['user', 'isWorkerAtCompany'],
     });
-
     const notInDb = (
       data.workersIDS.map(
         (id) => !!workers.find((worker) => worker.user.id === id) || id,
@@ -109,10 +117,8 @@ export class TasksService {
       return {
         status: false,
         message:
-          "Users (workers) with given ids haven't been found " +
-          notInDb.join(','),
+          "Users with given id's " + notInDb.join(',') + 'Does not exist ',
       } as UniversalResponseObject;
-    console.log(workers);
     const outOfTaskCompany = workers
       .filter((worker) => !(worker.isWorkerAtCompany.id === task.company.id))
       .map((worker) => worker.id);
@@ -125,7 +131,51 @@ export class TasksService {
           outOfTaskCompany.join(',') +
           ' are employed in company with is not assigned to given task',
       } as UniversalResponseObject;
-    console.log(outOfTaskCompany, 'OUT OF COMPANY');
+    return workers;
+  }
+
+  private static async _assignDataToTask(
+    data: CreateTaskDto,
+    user: User,
+  ): Promise<Task | UniversalResponseObject> {
+    const task = new Task();
+    task.name = data.name;
+    task.description = data.description ? data.description : null;
+    if (!data.purchaserID) task.purchaser = user;
+    else {
+      const foundPurchaser = await TasksService._isPurchaserInDB(data);
+      if (!(foundPurchaser instanceof User)) return foundPurchaser;
+      task.purchaser = foundPurchaser;
+    }
+    const company = await TasksService._isCompanyInDB(data);
+    if (!(company instanceof Company)) return company;
+
+    const isOwner = await TasksService._checkIfNotOwner(user, company);
+    if (isOwner) return isOwner;
+
+    task.company = company;
+    task.performanceDay = data.performanceDay ? data.performanceDay : null;
+    return task;
+  }
+
+  // TODO cleanUp fnBelow
+  private static async _findAndSignWorkers(
+    data: UpdateTaskAddWorkersDto,
+    user: User,
+  ): Promise<Task | UniversalResponseObject> {
+    const task = TasksService._findTask(data);
+    if (!(task instanceof Task)) return task;
+
+    const userWCompanies = await TasksService._findUserCompanies(
+      data,
+      user,
+      task,
+    );
+    if (!(userWCompanies instanceof User)) return userWCompanies;
+
+    const workers = await TasksService._notWorkerInDB(data, task);
+    if (!Array.isArray(workers)) return workers;
+
     task.workers = workers;
     return task;
   }
@@ -140,7 +190,7 @@ export class TasksService {
   }
 
   async signWorkers(data: UpdateTaskAddWorkersDto, user: User) {
-    const updatedTask = await this._findAndSignWorkers(data, user);
+    const updatedTask = await TasksService._findAndSignWorkers(data, user);
     console.log(updatedTask);
     if (!(updatedTask instanceof Task)) return updatedTask;
     updatedTask.save();

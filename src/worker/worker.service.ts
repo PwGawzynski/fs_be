@@ -7,12 +7,9 @@ import { Company } from '../company/entities/company.entity';
 
 @Injectable()
 export class WorkerService {
-  private static async _assignDataToWorker(
+  private static async _checkIfGivenAlreadyExist(
     data: CreateWorkerDto,
-    user: User,
-  ): Promise<Worker | UniversalResponseObject> {
-    const worker = new Worker();
-
+  ): Promise<UniversalResponseObject | false> {
     if (
       await Worker.findOne({
         where: {
@@ -27,7 +24,12 @@ export class WorkerService {
         status: false,
         message: 'Given user has been already assigned',
       } as UniversalResponseObject;
+    return false;
+  }
 
+  private static async _checkUserToBEWorker(
+    data: CreateWorkerDto,
+  ): Promise<User | UniversalResponseObject> {
     const userGivenToBeWorker = await User.findOne({
       where: {
         id: data.userID,
@@ -39,6 +41,13 @@ export class WorkerService {
         message:
           "User with given id with would be use to assign to worker doesn't exist",
       } as UniversalResponseObject;
+    return userGivenToBeWorker;
+  }
+
+  private static async _checkCompany(
+    data: CreateWorkerDto,
+    user: User,
+  ): Promise<Company | UniversalResponseObject> {
     const companyGivenToBeSigned = await Company.findOne({
       where: {
         id: data.companyID,
@@ -59,6 +68,27 @@ export class WorkerService {
         status: false,
         message: 'You are not owner of this company',
       } as UniversalResponseObject;
+    return companyGivenToBeSigned;
+  }
+
+  private static async _assignDataToWorker(
+    data: CreateWorkerDto,
+    user: User,
+  ): Promise<Worker | UniversalResponseObject> {
+    const worker = new Worker();
+
+    const existingWorker = await WorkerService._checkIfGivenAlreadyExist(data);
+    if (!(typeof existingWorker === 'boolean')) return existingWorker;
+
+    const userGivenToBeWorker = await WorkerService._checkUserToBEWorker(data);
+    if (!(userGivenToBeWorker instanceof User)) return userGivenToBeWorker;
+
+    const companyGivenToBeSigned = await WorkerService._checkCompany(
+      data,
+      user,
+    );
+    if (!(companyGivenToBeSigned instanceof Company))
+      return companyGivenToBeSigned;
     worker.user = userGivenToBeWorker;
     worker.isWorkerAtCompany = companyGivenToBeSigned;
     return worker;

@@ -2,8 +2,11 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
+  Length,
   Max,
   MaxLength,
+  Min,
 } from 'class-validator';
 import { Company } from '../../company/entities/company.entity';
 
@@ -43,6 +46,7 @@ export class CreateMachineDto {
 
   @IsOptional()
   @Max(99999)
+  @Min(0)
   workedHours: number;
 
   @IsString({
@@ -56,6 +60,12 @@ export class CreateMachineDto {
   })
   registrationNumber: string;
 
-  @IsOptional()
-  belongToCompany: Company;
+  @IsNotEmpty({
+    message: 'Company with should be signed to machine cannot be empty',
+  })
+  @Length(36, 36, {
+    message: 'Company id must be 36 characters string',
+  })
+  @IsUUID()
+  companyID: string;
 }

@@ -6,11 +6,38 @@ import { UniversalResponseObject } from '../../types';
 
 @Injectable()
 export class CompanyService {
-  private static _assignDataToEntity(
+  private static async isUniqueEntity(
+    field: string,
+    value: string,
+  ): Promise<boolean | UniversalResponseObject> {
+    return (
+      await Company.find({
+        where: {
+          [field]: value,
+        },
+      })
+    ).length
+      ? ({
+          status: false,
+          message: `Given ${field} is not unique`,
+        } as UniversalResponseObject)
+      : true;
+  }
+
+  private static async _assignDataToEntity(
     data: CreateCompanyDto,
     user: User,
-  ): Company | undefined {
+  ): Promise<Company | UniversalResponseObject> {
     const company = new Company();
+
+    // check if given company name is unique
+    const validationNameResult = await CompanyService.isUniqueEntity(
+      'name',
+      data.name,
+    );
+    if (!(typeof validationNameResult === 'boolean'))
+      return validationNameResult;
+
     company.name = data.name;
     company.description = data.description ? data.description : null;
     company.machines = null;
@@ -20,8 +47,9 @@ export class CompanyService {
   }
 
   async createCompany(data: CreateCompanyDto, user: User) {
-    const createdCompany = CompanyService._assignDataToEntity(data, user);
-    if (!createdCompany) return { status: false } as UniversalResponseObject;
+    const createdCompany = await CompanyService._assignDataToEntity(data, user);
+    console.log(createdCompany);
+    if (!(createdCompany instanceof Company)) return createdCompany;
     createdCompany.save();
 
     return { status: true } as UniversalResponseObject;

@@ -7,7 +7,7 @@ import { AllowOnlyIf } from '../decorators/AllowOnlyIf.decorator';
 import { UserObj } from '../decorators/user-obj.decorator';
 import { User } from '../user/entities/user.entity';
 
-@Controller()
+@Controller('company')
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
