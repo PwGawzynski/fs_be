@@ -16,7 +16,6 @@ export class CompanyService {
     company.machines = null;
     company.owners = [user];
     company.tasks = null;
-    company.createdAt = new Date();
     return company;
   }
 

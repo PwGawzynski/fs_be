@@ -11,6 +11,7 @@ import {
 import { Machine } from '../../machines/entities/machine.entity';
 import { User } from '../../user/entities/user.entity';
 import { Task } from '../../tasks/entities/task.entity';
+import { Worker } from '../../worker/entities/worker.entity';
 
 @Entity()
 export class Company extends BaseEntity {
@@ -31,6 +32,7 @@ export class Company extends BaseEntity {
 
   @Column({
     nullable: false,
+    default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date;
 
@@ -45,4 +47,8 @@ export class Company extends BaseEntity {
   @OneToMany(() => Task, (task) => task.purchaser)
   @JoinColumn()
   tasks: Task[];
+
+  @OneToMany(() => Worker, (worker) => worker.isWorkerAtCompany)
+  @JoinColumn()
+  workers: Worker[];
 }
