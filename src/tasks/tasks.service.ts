@@ -49,6 +49,7 @@ export class TasksService {
     return task;
   }
 
+  // TODO check if given worker is signed to company
   private async _findAndSignWorkers(
     data: UpdateTaskAddWorkersDto,
   ): Promise<Task | UniversalResponseObject> {
