@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Company } from '../../company/entities/company.entity';
+import { Worker } from '../../worker/entities/worker.entity';
 
 @Entity()
 export class Task extends BaseEntity {
@@ -41,11 +42,11 @@ export class Task extends BaseEntity {
   @JoinColumn()
   company: Company;
 
-  @ManyToMany(() => User, {
+  @ManyToMany(() => Worker, {
     nullable: true,
   })
   @JoinTable()
-  workers: User[];
+  workers: Worker[];
 
   @Column({
     default: () => 'CURRENT_TIMESTAMP',
