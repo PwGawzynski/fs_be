@@ -46,6 +46,11 @@ export class TasksService {
     user: User,
     company: Company,
   ): Promise<UniversalResponseObject | false> {
+    if (!(company?.owners && user?.id))
+      return {
+        status: false,
+        message: 'Request causer is not owner of given company',
+      } as UniversalResponseObject;
     if (!(user.id in company.owners.map((owner) => owner.id)))
       return {
         status: false,
