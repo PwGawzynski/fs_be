@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { User } from '../user/entities/user.entity';
 import { Task } from './entities/task.entity';
@@ -7,6 +7,7 @@ import { UniversalResponseObject } from '../../types';
 import { UpdateTaskAddWorkersDto } from './dto/update-task.dto';
 import { In } from 'typeorm';
 import { Worker } from '../worker/entities/worker.entity';
+import { Response } from 'express';
 
 @Injectable()
 export class TasksService {
@@ -33,6 +34,7 @@ export class TasksService {
       where: {
         id: data.companyID,
       },
+      relations: ['owners'],
     });
     if (!company)
       return {
@@ -46,12 +48,13 @@ export class TasksService {
     user: User,
     company: Company,
   ): Promise<UniversalResponseObject | false> {
-    if (!(company?.owners && user?.id))
+    if (!(company?.owners?.length && user?.id))
       return {
         status: false,
         message: 'Request causer is not owner of given company',
       } as UniversalResponseObject;
-    if (!(user.id in company.owners.map((owner) => owner.id)))
+
+    if (!company.owners.map((owner) => owner.id).find((e) => e === user.id))
       return {
         status: false,
         message: 'Request causer is not owner of given company',
@@ -186,13 +189,23 @@ export class TasksService {
     return task;
   }
 
-  async createNewTask(data: CreateTaskDto, user: User) {
+  async createNewTask(data: CreateTaskDto, user: User, res: Response) {
     const createdTask = await TasksService._assignDataToTask(data, user);
     if (!(createdTask instanceof Task)) return createdTask;
-    createdTask.save();
-    return {
-      status: true,
-    } as UniversalResponseObject;
+    return await createdTask
+      .save()
+      .then(() => {
+        return {
+          status: true,
+        } as UniversalResponseObject;
+      })
+      .catch((e) => {
+        Logger.error(e, e.stack, 'POST /task --> createNewTask');
+        return {
+          status: false,
+          message: 'Bad given parameters',
+        } as UniversalResponseObject;
+      });
   }
 
   async signWorkers(data: UpdateTaskAddWorkersDto, user: User) {
