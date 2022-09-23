@@ -112,6 +112,7 @@ export class TasksService {
       },
       relations: ['user', 'isWorkerAtCompany'],
     });
+
     const notInDb = (
       data.workersIDS.map(
         (id) => !!workers.find((worker) => worker.user.id === id) || id,
