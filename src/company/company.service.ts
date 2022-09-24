@@ -50,8 +50,13 @@ export class CompanyService {
     const createdCompany = await CompanyService._assignDataToEntity(data, user);
     console.log(createdCompany);
     if (!(createdCompany instanceof Company)) return createdCompany;
-    createdCompany.save();
-
-    return { status: true } as UniversalResponseObject;
+    return createdCompany
+      .save()
+      .then(() => {
+        return { status: true } as UniversalResponseObject;
+      })
+      .catch((e) => {
+        throw e;
+      });
   }
 }

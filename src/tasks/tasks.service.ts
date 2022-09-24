@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { User } from '../user/entities/user.entity';
 import { Task } from './entities/task.entity';
@@ -7,7 +7,6 @@ import { UniversalResponseObject } from '../../types';
 import { UpdateTaskAddWorkersDto } from './dto/update-task.dto';
 import { In } from 'typeorm';
 import { Worker } from '../worker/entities/worker.entity';
-import { Response } from 'express';
 
 @Injectable()
 export class TasksService {
@@ -19,6 +18,7 @@ export class TasksService {
         id: data.purchaserID,
       },
     });
+    console.log(purchaser);
     if (!purchaser)
       return {
         status: false,
@@ -189,32 +189,31 @@ export class TasksService {
     return task;
   }
 
-  async createNewTask(data: CreateTaskDto, user: User, res: Response) {
+  async createNewTask(data: CreateTaskDto, user: User) {
     const createdTask = await TasksService._assignDataToTask(data, user);
     if (!(createdTask instanceof Task)) return createdTask;
-    return await createdTask
+    createdTask.name = undefined;
+    return createdTask
       .save()
       .then(() => {
-        return {
-          status: true,
-        } as UniversalResponseObject;
+        return { status: true } as UniversalResponseObject;
       })
       .catch((e) => {
-        Logger.error(e, e.stack, 'POST /task --> createNewTask');
-        return {
-          status: false,
-          message: 'Bad given parameters',
-        } as UniversalResponseObject;
+        throw e;
       });
   }
 
   async signWorkers(data: UpdateTaskAddWorkersDto, user: User) {
     const updatedTask = await TasksService._findAndSignWorkers(data, user);
-    console.log(updatedTask);
     if (!(updatedTask instanceof Task)) return updatedTask;
-    updatedTask.save();
-    return {
-      status: true,
-    } as UniversalResponseObject;
+    // 'cause exception handling, it should be written like this
+    return updatedTask
+      .save()
+      .then(() => {
+        return { status: true } as UniversalResponseObject;
+      })
+      .catch((e) => {
+        throw e;
+      });
   }
 }

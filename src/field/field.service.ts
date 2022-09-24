@@ -81,10 +81,16 @@ export class FieldService {
     const field = await this._assignDataToNewField(data, user);
     if (!(field instanceof Field)) return field;
 
-    field.save();
-    return {
-      status: true,
-      data: { id: field.plotId },
-    } as NewFieldRes;
+    return field
+      .save()
+      .then(() => {
+        return {
+          status: true,
+          data: { id: field.plotId },
+        } as NewFieldRes;
+      })
+      .catch((e) => {
+        throw e;
+      });
   }
 }
