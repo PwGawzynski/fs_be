@@ -3,6 +3,8 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
+  Length,
   MaxLength,
 } from 'class-validator';
 
@@ -22,17 +24,20 @@ export class CreateTaskDto {
   // Purchaser with will be signed to task is identified by he's id number,
   // is optional because it be signed to user who causer creation
   @IsOptional()
+  @IsUUID()
   @IsNotEmpty({
     message: 'If userID is given, it cannot be empty',
   })
-  @MaxLength(36)
+  @Length(36, 36, {
+    message: 'Id must have 36 characters',
+  })
   purchaserID: string;
 
   // Company with will be signed to task is identified by he's id number
   @IsNotEmpty({
     message: 'Company must be chosen for any task',
   })
-  @MaxLength(36)
+  @Length(36, 36)
   companyID: string;
 
   @IsOptional()
