@@ -1,5 +1,6 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
@@ -26,7 +27,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     );
 
     let status: HttpStatus;
-
+    // for now, decrease information about query fail  cause strategy has been taken in case of safety,
+    // that's why sendBack message is hardcoded not taken from e.message
     switch (exception.constructor) {
       case TypeORMError:
         status = HttpStatus.UNPROCESSABLE_ENTITY;
@@ -38,15 +40,29 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         break;
       case QueryFailedError:
         status = HttpStatus.UNPROCESSABLE_ENTITY;
-        sendBackMessage = (exception as QueryFailedError).message;
+        sendBackMessage =
+          'OPERATION ABORTED: Possibly bad data object has been given.';
         break;
       case EntityNotFoundError:
         status = HttpStatus.UNPROCESSABLE_ENTITY;
-        sendBackMessage = (exception as EntityNotFoundError).message;
+        sendBackMessage =
+          'OPERATION ABORTED: Possibly bad data object has been given.';
+
         break;
       case CannotCreateEntityIdMapError:
         status = HttpStatus.UNPROCESSABLE_ENTITY;
-        sendBackMessage = (exception as CannotCreateEntityIdMapError).message;
+        sendBackMessage =
+          'OPERATION ABORTED: Possibly bad data object has been given.';
+
+        break;
+      case BadRequestException:
+        status = HttpStatus.BAD_REQUEST;
+        const message = (
+          (
+            exception as BadRequestException
+          ).getResponse() as IResBadReqException
+        )?.message;
+        sendBackMessage = message[0] ?? 'Bad Request';
         break;
       default:
         status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -69,4 +85,10 @@ export const GlobalResponseError: (
 export interface IResponseError {
   statusCode: number;
   message: string;
+}
+
+interface IResBadReqException {
+  statusCode: string;
+  error: string;
+  message: Array<string>;
 }
