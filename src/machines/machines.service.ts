@@ -76,7 +76,13 @@ export class MachinesService {
       user,
     );
     if (!(createdMachine instanceof Machine)) return createdMachine;
-    createdMachine.save();
-    return { status: true } as UniversalResponseObject;
+    return createdMachine
+      .save()
+      .then(() => {
+        return { status: true } as UniversalResponseObject;
+      })
+      .catch((e) => {
+        throw e;
+      });
   }
 }

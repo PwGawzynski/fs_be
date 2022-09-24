@@ -18,6 +18,7 @@ export class TasksService {
         id: data.purchaserID,
       },
     });
+    console.log(purchaser);
     if (!purchaser)
       return {
         status: false,
@@ -33,6 +34,7 @@ export class TasksService {
       where: {
         id: data.companyID,
       },
+      relations: ['owners'],
     });
     if (!company)
       return {
@@ -46,12 +48,13 @@ export class TasksService {
     user: User,
     company: Company,
   ): Promise<UniversalResponseObject | false> {
-    if (!(company?.owners && user?.id))
+    if (!(company?.owners?.length && user?.id))
       return {
         status: false,
         message: 'Request causer is not owner of given company',
       } as UniversalResponseObject;
-    if (!(user.id in company.owners.map((owner) => owner.id)))
+
+    if (!company.owners.map((owner) => owner.id).find((e) => e === user.id))
       return {
         status: false,
         message: 'Request causer is not owner of given company',
@@ -189,19 +192,28 @@ export class TasksService {
   async createNewTask(data: CreateTaskDto, user: User) {
     const createdTask = await TasksService._assignDataToTask(data, user);
     if (!(createdTask instanceof Task)) return createdTask;
-    createdTask.save();
-    return {
-      status: true,
-    } as UniversalResponseObject;
+    createdTask.name = undefined;
+    return createdTask
+      .save()
+      .then(() => {
+        return { status: true } as UniversalResponseObject;
+      })
+      .catch((e) => {
+        throw e;
+      });
   }
 
   async signWorkers(data: UpdateTaskAddWorkersDto, user: User) {
     const updatedTask = await TasksService._findAndSignWorkers(data, user);
-    console.log(updatedTask);
     if (!(updatedTask instanceof Task)) return updatedTask;
-    updatedTask.save();
-    return {
-      status: true,
-    } as UniversalResponseObject;
+    // 'cause exception handling, it should be written like this
+    return updatedTask
+      .save()
+      .then(() => {
+        return { status: true } as UniversalResponseObject;
+      })
+      .catch((e) => {
+        throw e;
+      });
   }
 }
