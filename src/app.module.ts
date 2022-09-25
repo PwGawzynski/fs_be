@@ -10,6 +10,7 @@ import { CompanyModule } from './company/company.module';
 import { MachinesModule } from './machines/machines.module';
 import { TasksModule } from './tasks/tasks.module';
 import { FieldModule } from './field/field.module';
+import { WorkerModule } from './worker/worker.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -38,6 +39,7 @@ import configuration from './config/configuration';
     MachinesModule,
     TasksModule,
     FieldModule,
+    WorkerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

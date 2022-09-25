@@ -1,20 +1,20 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { CompanyService } from './company.service';
-import { CreateCompanyDto } from './dto/create-company.dto';
+import { WorkerService } from './worker.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../Guards/RolesGuard';
 import { AllowOnlyIf } from '../decorators/AllowOnlyIf.decorator';
+import { CreateWorkerDto } from './dto/create-worker.dto';
 import { UserObj } from '../decorators/user-obj.decorator';
 import { User } from '../user/entities/user.entity';
 
-@Controller('company')
-export class CompanyController {
-  constructor(private readonly companyService: CompanyService) {}
+@Controller('worker')
+export class WorkerController {
+  constructor(private readonly workerService: WorkerService) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @AllowOnlyIf('owner')
-  createNew(@Body() data: CreateCompanyDto, @UserObj() user: User) {
-    return this.companyService.createCompany(data, user);
+  createWorker(@Body() data: CreateWorkerDto, @UserObj() user: User) {
+    return this.workerService.createNew(data, user);
   }
 }

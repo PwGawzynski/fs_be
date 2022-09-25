@@ -22,8 +22,8 @@ export class UserService {
   // sets up new User object and tries to find unused id for it and unused activateHash
   private static async _setUpNewUser(createUserDto: CreateUserDto) {
     const userRoles = new Roles();
-    userRoles.worker = createUserDto.roles.worker;
-    userRoles.owner = createUserDto.roles.owner;
+    userRoles.worker = createUserDto.roles?.worker ?? false;
+    userRoles.owner = createUserDto.roles?.owner ?? true;
     const userAccount = new Account();
     userAccount.login = createUserDto.login;
     userAccount.pwdHashed = hashPwd(createUserDto.password);
@@ -98,13 +98,19 @@ export class UserService {
     console.log(user);
     this._sendActivateEmail(user);
     // save user entity
-    user.save();
     // if everything has been done correct send confirmation info
-    return {
-      status: true,
-      message:
-        'Email with link to activate your account has been send, go to your mail box and click on it.',
-    } as UniversalResponseObject;
+    return user
+      .save()
+      .then(() => {
+        return {
+          status: true,
+          message:
+            'Email with link to activate your account has been send, go to your mail box and click on it.',
+        } as UniversalResponseObject;
+      })
+      .catch((e) => {
+        throw e;
+      });
   }
 
   // this service check if given activation Hash is is stored in Db for any user
@@ -116,6 +122,7 @@ export class UserService {
           activateHash,
         },
       },
+      relations: ['roles', 'account'],
     });
     if (!user)
       return {

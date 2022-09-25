@@ -32,7 +32,9 @@ export class Machine extends BaseEntity {
   model: string;
 
   @Column({
-    precision: 5,
+    type: 'float',
+    precision: 7,
+    scale: 2,
     default: 0,
   })
   workedHours: number;

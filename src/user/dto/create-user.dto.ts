@@ -9,8 +9,11 @@ import {
   Matches,
   IsNotEmpty,
   IsObject,
+  IsOptional,
+  ValidateNested,
 } from 'class-validator';
-import { ICreateUserAsk, UserRolesObj } from '../../../types';
+import { ICreateUserAsk } from '../../../types';
+import { CreateRolesDto } from './create-roles.dto';
 
 export class CreateUserDto implements ICreateUserAsk {
   @IsAscii()
@@ -61,7 +64,9 @@ export class CreateUserDto implements ICreateUserAsk {
   })
   email: string;
 
+  @ValidateNested({ each: true })
+  @IsOptional()
   @IsNotEmpty()
   @IsObject()
-  roles: UserRolesObj;
+  roles: CreateRolesDto;
 }

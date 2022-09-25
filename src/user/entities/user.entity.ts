@@ -43,7 +43,7 @@ export class User extends BaseEntity {
   roles: Roles;
 
   @ManyToMany(() => Company, (company) => company.owners)
-  ownedCompanies: Company;
+  ownedCompanies: Company[];
 
   @OneToMany(() => Task, (task) => task.purchaser)
   @JoinColumn()
