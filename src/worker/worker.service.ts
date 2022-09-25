@@ -98,7 +98,7 @@ export class WorkerService {
     const createdWorker = await WorkerService._assignDataToWorker(data, user);
     console.log(createdWorker);
     if (!(createdWorker instanceof Worker)) return createdWorker;
-    createdWorker
+    return createdWorker
       .save()
       .then(() => {
         return { status: true } as UniversalResponseObject;
