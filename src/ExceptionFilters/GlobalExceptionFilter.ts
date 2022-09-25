@@ -6,6 +6,7 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { QueryFailedError, TypeORMError } from 'typeorm';
@@ -55,6 +56,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           'OPERATION ABORTED: Possibly bad data object has been given.';
 
         break;
+      case UnauthorizedException:
+        status = HttpStatus.UNAUTHORIZED;
+        sendBackMessage = 'OPERATION ABORTED: Causer Unauthorised';
+
+        break;
       case BadRequestException:
         status = HttpStatus.BAD_REQUEST;
         const message = (
@@ -62,28 +68,28 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             exception as BadRequestException
           ).getResponse() as IResBadReqException
         )?.message;
-        sendBackMessage = message[0] ?? 'Bad Request';
+        sendBackMessage =
+          typeof message !== 'string' ? message[0] ?? 'Bad Request' : message;
         break;
       default:
         status = HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
-    res.status(status).json(GlobalResponseError(status, sendBackMessage));
+    res.status(status).json(GlobalResponseError(sendBackMessage));
   }
 }
 
-export const GlobalResponseError: (
-  statusCode: number,
+export const GlobalResponseError: (message: string) => IResponseError = (
   message: string,
-) => IResponseError = (statusCode: number, message: string): IResponseError => {
+): IResponseError => {
   return {
-    statusCode: statusCode,
+    status: false,
     message,
   };
 };
 
 export interface IResponseError {
-  statusCode: number;
+  status: boolean;
   message: string;
 }
 
