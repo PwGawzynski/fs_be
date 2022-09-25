@@ -171,7 +171,7 @@ export class TaskHelperService {
     data: UpdateTaskAddWorkersDto,
     user: User,
   ): Promise<Task | UniversalResponseObject> {
-    const task = TaskHelperService._findTask(data);
+    const task = await TaskHelperService._findTask(data);
     if (!(task instanceof Task)) return task;
 
     const userWCompanies = await TaskHelperService._findUserCompanies(
