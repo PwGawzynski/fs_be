@@ -4,20 +4,23 @@ import { UniversalResponseObject } from '../../../types';
 
 @Injectable()
 export class UserDbValidatorService {
-  public async existInDb(
-    id: string,
+  public async findBy(
+    key: string,
+    value: string,
     ifNotMessage: string,
+    relations?: string[],
   ): Promise<User | UniversalResponseObject> {
-    const purchaser = await User.findOne({
+    const user = await User.findOne({
       where: {
-        id,
+        [key]: value,
       },
+      relations,
     });
-    if (!purchaser)
+    if (!user)
       return {
         status: false,
         message: ifNotMessage,
       } as UniversalResponseObject;
-    return purchaser;
+    return user;
   }
 }
