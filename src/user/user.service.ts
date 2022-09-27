@@ -1,73 +1,19 @@
 import { Inject, Injectable, StreamableFile } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
-import { v4 as uuid } from 'uuid';
-import { hashPwd } from '../utils/hash-pwd';
 import { UniversalResponseObject } from '../../types';
-import { MailService } from '../mail/mail.service';
-import { registrationMail } from '../templates/email/registrationMail';
 import { createReadStream } from 'fs';
 import * as path from 'path';
+import { UserHelperService } from './user-helper/user-helper.service';
 import { ConfigService } from '@nestjs/config';
-import { Account } from './entities/account.entity';
-import { Roles } from './entities/roles.entity';
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject(MailService) private mailService: MailService,
+    @Inject(UserHelperService)
+    private readonly userHelperService: UserHelperService,
     @Inject(ConfigService) private readonly ConfigService: ConfigService,
   ) {}
-
-  // sets up new User object and tries to find unused id for it and unused activateHash
-  private static async _setUpNewUser(createUserDto: CreateUserDto) {
-    const userRoles = new Roles();
-    userRoles.worker = createUserDto.roles?.worker ?? false;
-    userRoles.owner = createUserDto.roles
-      ? createUserDto.roles?.owner ?? false
-      : true;
-    const userAccount = new Account();
-    userAccount.login = createUserDto.login;
-    userAccount.pwdHashed = hashPwd(createUserDto.password);
-    userAccount.email = createUserDto.email;
-    const user = new User();
-    user.name = createUserDto.name;
-    user.surname = createUserDto.surname;
-    user.age = createUserDto.age;
-    user.account = userAccount;
-    user.roles = userRoles;
-    do {
-      user.id = uuid();
-      user.account.activateHash = uuid();
-    } while (
-      await User.findOne({
-        where: [
-          { id: user.id },
-          {
-            account: {
-              activateHash: user.account.activateHash,
-            },
-          },
-        ],
-        relations: ['account'],
-      })
-    );
-    await userRoles.save();
-    await userAccount.save();
-    return user;
-  }
-
-  // sends email with activation link to user
-  private async _sendActivateEmail(user: User) {
-    await this.mailService.sendMail(
-      user.account.email,
-      'Thanks for registration on FarmServiceTM',
-      registrationMail(
-        user,
-        `http://localhost:3001/users/activate/${user.account.activateHash}`,
-      ),
-    );
-  }
 
   // it's create new user entity and manage it's proper saving in DB and sending registration email.
   async create(createUserDto: CreateUserDto): Promise<UniversalResponseObject> {
@@ -95,10 +41,10 @@ export class UserService {
         message: 'User with given email or login already exist',
       } as UniversalResponseObject;
     // if not sign data from req to user entity
-    const user = await UserService._setUpNewUser(createUserDto);
+    const user = await this.userHelperService.setUpNewUser(createUserDto);
     // send registration email on given address
     console.log(user);
-    this._sendActivateEmail(user);
+    this.userHelperService.sendActivateEmail(user);
     // save user entity
     // if everything has been done correct send confirmation info
     return user
