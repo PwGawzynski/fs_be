@@ -47,7 +47,8 @@ export class TaskHelperService {
     task.description = data.description ? data.description : null;
     if (!data.purchaserID) task.purchaser = user;
     else {
-      const foundPurchaser = await this.userDbValidatorService.existInDb(
+      const foundPurchaser = await this.userDbValidatorService.findBy(
+        'id',
         data.purchaserID,
         'Given purchaser has not been found',
       );
