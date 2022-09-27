@@ -22,7 +22,6 @@ export class UserService {
   // sets up new User object and tries to find unused id for it and unused activateHash
   private static async _setUpNewUser(createUserDto: CreateUserDto) {
     const userRoles = new Roles();
-    console.log(createUserDto.roles);
     userRoles.worker = createUserDto.roles?.worker ?? false;
     userRoles.owner = createUserDto.roles
       ? createUserDto.roles?.owner ?? false
