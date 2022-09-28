@@ -21,6 +21,7 @@ export class Company extends BaseEntity {
   @Column({
     length: 500,
     nullable: false,
+    unique: true,
   })
   name: string;
 
