@@ -7,6 +7,8 @@ import {
   Length,
   MaxLength,
 } from 'class-validator';
+import { DoExistForCompany } from '../../db-validators/db-validation-decorators/company/DoExistForCompany';
+import { DoExistForUser } from '../../db-validators/db-validation-decorators/user/DoExistForUser';
 
 export class CreateTaskDto {
   @IsString({ message: 'Task name nus be a string type' })
@@ -31,6 +33,7 @@ export class CreateTaskDto {
   @Length(36, 36, {
     message: 'Id must have 36 characters',
   })
+  @DoExistForUser()
   purchaserID: string;
 
   // Company with will be signed to task is identified by he's id number
@@ -38,6 +41,7 @@ export class CreateTaskDto {
     message: 'Company must be chosen for any task',
   })
   @Length(36, 36)
+  @DoExistForCompany()
   companyID: string;
 
   @IsOptional()
