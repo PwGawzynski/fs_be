@@ -9,9 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { QueryFailedError, TypeORMError } from 'typeorm';
-import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';
-import { CannotCreateEntityIdMapError } from 'typeorm/error/CannotCreateEntityIdMapError';
+import { QueryFailedError } from 'typeorm';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -26,41 +24,22 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       (exception as any).stack,
       `${req.method} ${req.url}`,
     );
-
     let status: HttpStatus;
-    // for now, decrease information about query fail  cause strategy has been taken in case of safety,
-    // that's why sendBack message is hardcoded not taken from e.message
     switch (exception.constructor) {
-      case TypeORMError:
-        status = HttpStatus.UNPROCESSABLE_ENTITY;
-        sendBackMessage =
-          'Parameters you have been given causes sql problem, please make sure that they are correct';
-        break;
       case HttpException:
         status = (exception as HttpException).getStatus();
         break;
+
       case QueryFailedError:
         status = HttpStatus.UNPROCESSABLE_ENTITY;
         sendBackMessage =
-          'OPERATION ABORTED: Possibly bad data object has been given.';
-        break;
-      case EntityNotFoundError:
-        status = HttpStatus.UNPROCESSABLE_ENTITY;
-        sendBackMessage =
-          'OPERATION ABORTED: Possibly bad data object has been given.';
-
-        break;
-      case CannotCreateEntityIdMapError:
-        status = HttpStatus.UNPROCESSABLE_ENTITY;
-        sendBackMessage =
-          'OPERATION ABORTED: Possibly bad data object has been given.';
-
+          'OPERATION ABORTED: Data you have been given causes execution problem, make sure that data is correct and try again.';
         break;
       case UnauthorizedException:
         status = HttpStatus.UNAUTHORIZED;
         sendBackMessage = 'OPERATION ABORTED: Causer Unauthorised';
-
         break;
+
       case BadRequestException:
         status = HttpStatus.BAD_REQUEST;
         const message = (
@@ -71,6 +50,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         sendBackMessage =
           typeof message !== 'string' ? message[0] ?? 'Bad Request' : message;
         break;
+
       default:
         status = HttpStatus.INTERNAL_SERVER_ERROR;
     }
