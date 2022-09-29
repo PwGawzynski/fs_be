@@ -25,9 +25,9 @@ export class WorkerHelperService {
     const existingWorker = await this.workerDbValidatorService.isAssigned(data);
     if (!(typeof existingWorker === 'boolean')) return existingWorker;
 
-    const userGivenToBeWorker =
-      await this.workerDbValidatorService.checkGivenWorker(data);
-    if (!(userGivenToBeWorker instanceof User)) return userGivenToBeWorker;
+    const userInstance = new User();
+    userInstance.id = data.userID;
+    const userGivenToBeWorker = userInstance;
 
     const companyGivenToBeSigned = await this.companyDbValidatorService.isOwner(
       data,

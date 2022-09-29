@@ -8,7 +8,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { Company } from '../../company/entities/company.entity';
+import { IsUniqForMachine } from '../../db-validators/db-validation-decorators/machine/IsUnikForMachine';
 
 export class CreateMachineDto {
   @IsString({
@@ -58,6 +58,7 @@ export class CreateMachineDto {
   @MaxLength(50, {
     message: 'Machine Registration number cannot be longer than 50 characters',
   })
+  @IsUniqForMachine()
   registrationNumber: string;
 
   @IsNotEmpty({

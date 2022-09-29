@@ -1,4 +1,6 @@
 import { IsNotEmpty, IsUUID, Length } from 'class-validator';
+import { DoExistForCompany } from '../../db-validators/db-validation-decorators/company/DoExistForCompany';
+import { DoExistForUser } from '../../db-validators/db-validation-decorators/user/DoExistForUser';
 
 export class CreateWorkerDto {
   @IsNotEmpty({
@@ -8,6 +10,7 @@ export class CreateWorkerDto {
   @Length(36, 36, {
     message: 'ID must have 36 characters',
   })
+  @DoExistForUser()
   userID: string;
 
   @IsNotEmpty({
@@ -17,5 +20,6 @@ export class CreateWorkerDto {
   @Length(36, 36, {
     message: 'ID must have 36 characters',
   })
+  @DoExistForCompany()
   companyID: string;
 }
