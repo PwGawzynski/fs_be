@@ -54,11 +54,6 @@ export class FieldHelperService {
     const plodID = await this._getPlodId(data);
     if (!(typeof plodID === 'string')) return plodID;
 
-    const uniquePlodId = await this.fieldDbValidatorService.isUniqueEntity(
-      'plotId',
-      plodID,
-    );
-    if (!(typeof uniquePlodId === 'boolean')) return uniquePlodId;
     field.plotId = plodID;
     field.owner = user;
     field.area = this._getFieldArea('plotId');
