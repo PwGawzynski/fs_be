@@ -41,7 +41,7 @@ export class Machine extends BaseEntity {
 
   @Column({
     length: 50,
-    default: null,
+    unique: true,
   })
   registrationNumber: string;
 

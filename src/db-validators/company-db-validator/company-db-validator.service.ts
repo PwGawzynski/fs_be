@@ -6,25 +6,6 @@ import { User } from '../../user/entities/user.entity';
 
 @Injectable()
 export class CompanyDbValidatorService {
-  // maybe it is unnecessary because DB should throw error if is not unique
-  public async isGivenPropUniq(
-    field: string,
-    value: string,
-  ): Promise<boolean | UniversalResponseObject> {
-    return (
-      await Company.find({
-        where: {
-          [field]: value,
-        },
-      })
-    ).length
-      ? ({
-          status: false,
-          message: `Given ${field} is not unique`,
-        } as UniversalResponseObject)
-      : true;
-  }
-
   public async findWOwners(
     id: string,
   ): Promise<Company | UniversalResponseObject> {

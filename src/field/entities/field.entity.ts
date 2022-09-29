@@ -22,6 +22,7 @@ export class Field extends BaseEntity {
   @Column({
     nullable: false,
     length: 40,
+    unique: true,
   })
   plotId: string;
 

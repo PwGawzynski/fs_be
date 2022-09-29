@@ -17,13 +17,6 @@ export class CompanyHelperService {
     user: User,
   ): Promise<Company | UniversalResponseObject> {
     const company = new Company();
-
-    // check if given company name is unique
-    const validationNameResult =
-      await this.companyDbValidatorService.isGivenPropUniq('name', data.name);
-    if (!(typeof validationNameResult === 'boolean'))
-      return validationNameResult;
-
     company.name = data.name;
     company.description = data.description ? data.description : null;
     company.machines = null;

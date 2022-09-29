@@ -15,21 +15,6 @@ export class MachineHelperService {
   public async assignDataToMachine(data: CreateMachineDto, user: User) {
     const machine = new Machine();
 
-    const nameValidationResult = await this.machineDbValidatorService.isUniqBy(
-      'name',
-      data.name,
-    );
-    if (!(typeof nameValidationResult === 'boolean'))
-      return nameValidationResult;
-
-    const registrationValidationResult =
-      await this.machineDbValidatorService.isUniqBy(
-        'registrationNumber',
-        data.registrationNumber,
-      );
-    if (!(typeof registrationValidationResult === 'boolean'))
-      return registrationValidationResult;
-
     const company = (
       await Company.find({
         where: {
@@ -43,7 +28,7 @@ export class MachineHelperService {
     if (!company)
       return {
         status: false,
-        message: 'Given company not belong to caller or not exist',
+        message: 'Given company not belong to caller',
       } as UniversalResponseObject;
 
     machine.name = data.name;
