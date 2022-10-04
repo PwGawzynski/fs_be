@@ -42,7 +42,7 @@ export class Task extends BaseEntity {
   @JoinColumn()
   company: Company;
 
-  @ManyToMany(() => Worker, {
+  @ManyToMany(() => Worker, (worker) => worker.hasTasks, {
     nullable: true,
   })
   @JoinTable()
