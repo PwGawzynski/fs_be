@@ -24,12 +24,12 @@ export class CompanyDbValidatorService {
   }
 
   public async isOwner(
-    data: CreateWorkerDto,
+    data: string,
     user: User,
   ): Promise<Company | UniversalResponseObject> {
     const companyGivenToBeSigned = await Company.findOne({
       where: {
-        id: data.companyID,
+        id: data,
       },
       relations: ['owners'],
     });
