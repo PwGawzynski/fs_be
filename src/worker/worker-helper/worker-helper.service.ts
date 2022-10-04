@@ -30,7 +30,7 @@ export class WorkerHelperService {
     const userGivenToBeWorker = userInstance;
 
     const companyGivenToBeSigned = await this.companyDbValidatorService.isOwner(
-      data,
+      data.companyID,
       user,
     );
     if (!(companyGivenToBeSigned instanceof Company))
