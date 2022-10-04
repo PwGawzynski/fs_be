@@ -12,6 +12,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { FieldModule } from './field/field.module';
 import { WorkerModule } from './worker/worker.module';
 import { DbValidatorsModule } from './db-validators/db-validators.module';
+import { StatisticModule } from './statistic/statistic.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -42,6 +43,7 @@ import configuration from './config/configuration';
     FieldModule,
     WorkerModule,
     DbValidatorsModule,
+    StatisticModule,
   ],
   controllers: [AppController],
   providers: [AppService],
