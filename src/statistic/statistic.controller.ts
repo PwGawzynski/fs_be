@@ -11,10 +11,17 @@ import { User } from '../user/entities/user.entity';
 export class StatisticController {
   constructor(private readonly statisticService: StatisticService) {}
 
-  @Get('worker/dailyDoneTasks')
+  @Get('worker/daily-done-tasks')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @AllowOnlyIf('worker', 'owner')
   doneTaskDailyStats(@Body() data: GetWorkerDailyDto, @UserObj() user: User) {
     return this.statisticService.workerDailyDoneTasks(data, user);
+  }
+
+  @Get('worker/all-don-tasks')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @AllowOnlyIf('worker', 'owner')
+  allDoneTaskStats(@Body() data: GetWorkerDailyDto, @UserObj() user: User) {
+    return this.statisticService.workerAllDoneTaskStats(data, user);
   }
 }

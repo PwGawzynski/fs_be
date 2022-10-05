@@ -42,4 +42,13 @@ export class WorkerDbValidatorService {
       } as UniversalResponseObject;
     return userGivenToBeWorker;
   }
+
+  public getWorkerWithCompany(id: string) {
+    return Worker.findOne({
+      where: {
+        id,
+      },
+      relations: ['isWorkerAtCompany'],
+    });
+  }
 }
