@@ -36,20 +36,20 @@ export class User extends BaseEntity {
 
   @OneToOne(() => Account)
   @JoinColumn()
-  account: Account;
+  account: Promise<Account>;
 
   @OneToOne(() => Roles)
   @JoinColumn()
-  roles: Roles;
+  roles: Promise<Roles>;
 
   @ManyToMany(() => Company, (company) => company.owners)
-  ownedCompanies: Company[];
+  ownedCompanies: Promise<Company[]>;
 
   @OneToMany(() => Task, (task) => task.purchaser)
   @JoinColumn()
-  tasks: Task[];
+  tasks: Promise<Task[]>;
 
   @OneToMany(() => Field, (field) => field.owner)
   @JoinColumn()
-  ownedFields: Field[];
+  ownedFields: Promise<Field[]>;
 }
