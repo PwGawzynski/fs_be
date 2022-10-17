@@ -1,42 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Field } from './entities/field.entity';
 import { CreateFieldDto } from './dto/create-field.dto';
 import { User } from '../user/entities/user.entity';
-import { Field } from './entities/field.entity';
-import { v4 as uuid } from 'uuid';
+import { UniversalResponseObject } from '../../types';
 import { HttpService } from '@nestjs/axios';
-import { NewFieldRes, UniversalResponseObject } from '../../types';
-import { Company } from '../company/entities/company.entity';
+import { TypeORMError } from 'typeorm';
 
 @Injectable()
 export class FieldService {
   constructor(private readonly httpService: HttpService) {}
-
-  private static async isUniqueEntity(
-    field: string,
-    value: string,
-  ): Promise<boolean | UniversalResponseObject> {
-    return (
-      await Field.find({
-        where: {
-          [field]: value,
-        },
-      })
-    ).length
-      ? ({
-          status: false,
-          message: `Given ${field} is not unique`,
-        } as UniversalResponseObject)
-      : true;
-  }
-
-  // TODO implement api call to get area
-  private _getFieldArea(fieldID: string) {
+  _getFiledArea() {
     return 2.31;
   }
 
-  private async _getPlodId(
-    data: CreateFieldDto,
-  ): Promise<string | UniversalResponseObject> {
+  private async _getPlodId(data: CreateFieldDto): Promise<string | false> {
     // in case of issues check returning value from below
     // returning data format is status\nIDField\n that's why i use split to split to array data and then check if response is ok
     const plotId = (
@@ -48,49 +25,36 @@ export class FieldService {
     ).split('\n') as [string, string];
     return !isNaN(Number(plotId[0])) && Number(plotId[0]) !== -1
       ? plotId[1]
-      : ({
-          status: false,
-          message:
-            'Cannot find plodId, try again later or check latitude and longitude',
-        } as UniversalResponseObject);
+      : false;
   }
 
-  private async _assignDataToNewField(
-    data: CreateFieldDto,
-    user: User,
-  ): Promise<Field | UniversalResponseObject> {
+  async createNewField(data: CreateFieldDto, user: User) {
     const field = new Field();
-    field.id = uuid();
-    field.latitude = data.latitude;
+    field.area = this._getFiledArea();
+    const plodId = await this._getPlodId(data);
+    if (!plodId)
+      throw new HttpException(
+        'Cannot find any plod using given latitude and longitude',
+        HttpStatus.NOT_FOUND,
+      );
+    if (!(await field.unique('plodId')))
+      throw new HttpException(
+        'Given coords has already be signed to existing plot!',
+        HttpStatus.CONFLICT,
+      );
+    field.plotId = plodId;
     field.longitude = data.longitude;
-    field.name = data.name ? data.name : null;
-
-    const plodID = await this._getPlodId(data);
-    if (!(typeof plodID === 'string')) return plodID;
-
-    const uniquePlodId = await FieldService.isUniqueEntity('plotId', plodID);
-    if (!(typeof uniquePlodId === 'boolean')) return uniquePlodId;
-    field.plotId = plodID;
-    field.owner = user;
-    field.area = this._getFieldArea('plotId');
-    // after implementation area validation like plodID
-    return field;
-  }
-
-  async create(data: CreateFieldDto, user: User) {
-    const field = await this._assignDataToNewField(data, user);
-    if (!(field instanceof Field)) return field;
+    field.latitude = data.latitude;
+    field.name = data.name ?? null;
+    field.owner = Promise.resolve(user);
 
     return field
       .save()
       .then(() => {
-        return {
-          status: true,
-          data: { id: field.plotId },
-        } as NewFieldRes;
+        return { status: true } as UniversalResponseObject;
       })
-      .catch((e) => {
-        throw e;
+      .catch(() => {
+        throw new TypeORMError('Cannot save');
       });
   }
 }
