@@ -22,6 +22,7 @@ export class Field extends BaseEntity {
   @Column({
     nullable: false,
     length: 40,
+    unique: true,
   })
   plotId: string;
 
@@ -44,5 +45,14 @@ export class Field extends BaseEntity {
 
   @ManyToOne(() => User)
   @JoinColumn()
-  owner: User;
+  owner: Promise<User>;
+
+  // false if is not uniq
+  public async unique(byProperty: string) {
+    return !(await Field.findOne({
+      where: {
+        [byProperty]: this[byProperty],
+      },
+    }));
+  }
 }

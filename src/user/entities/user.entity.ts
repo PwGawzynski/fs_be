@@ -11,7 +11,7 @@ import {
 import { Account } from './account.entity';
 import { Roles } from './roles.entity';
 import { Company } from '../../company/entities/company.entity';
-import { Task } from '../../tasks/entities/task.entity';
+import { Task } from '../../task/entities/task.entity';
 import { Field } from '../../field/entities/field.entity';
 
 @Entity()
@@ -34,13 +34,17 @@ export class User extends BaseEntity {
   })
   age: number;
 
-  @OneToOne(() => Account)
+  @OneToOne(() => Account, {
+    eager: true,
+  })
   @JoinColumn()
-  account: Promise<Account>;
+  account: Account;
 
-  @OneToOne(() => Roles)
+  @OneToOne(() => Roles, {
+    eager: true,
+  })
   @JoinColumn()
-  roles: Promise<Roles>;
+  roles: Roles;
 
   @ManyToMany(() => Company, (company) => company.owners)
   ownedCompanies: Promise<Company[]>;
