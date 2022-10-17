@@ -11,6 +11,7 @@ import { TaskModule } from './task/task.module';
 import { MachineModule } from './machine/machine.module';
 import { CompanyModule } from './company/company.module';
 import { FieldModule } from './field/field.module';
+import { StatisticModule } from './statistic/statistic.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -40,6 +41,7 @@ import configuration from './config/configuration';
     TaskModule,
     WorkerModule,
     FieldModule,
+    StatisticModule,
   ],
   controllers: [AppController],
   providers: [AppService],
