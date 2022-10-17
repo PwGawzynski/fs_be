@@ -19,16 +19,33 @@ export class Worker extends BaseEntity {
     nullable: false,
   })
   @JoinColumn()
-  user: User;
+  user: Promise<User>;
 
   @ManyToOne(() => Company, (company) => company.workers, {
     nullable: true,
   })
   @JoinColumn()
-  isWorkerAtCompany: Company;
+  isWorkerAtCompany: Promise<Company>;
 
   @Column({
     default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date;
+
+  public async unique(byProperty) {
+    console.log(
+      await Worker.findOne({
+        where: {
+          user: this[byProperty],
+        },
+      }),
+      await this.user,
+    );
+
+    return !(await Worker.findOne({
+      where: {
+        [byProperty]: await this[byProperty],
+      },
+    }));
+  }
 }

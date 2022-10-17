@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Catch,
   ExceptionFilter,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Logger,
@@ -33,11 +34,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     switch (exception.constructor) {
       case TypeORMError:
         status = HttpStatus.UNPROCESSABLE_ENTITY;
-        sendBackMessage =
-          'Parameters you have been given causes sql problem, please make sure that they are correct';
+        sendBackMessage = (exception as TypeORMError).message;
         break;
       case HttpException:
         status = (exception as HttpException).getStatus();
+        sendBackMessage = (exception as HttpException).message;
         break;
       case QueryFailedError:
         status = HttpStatus.UNPROCESSABLE_ENTITY;
@@ -70,6 +71,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         )?.message;
         sendBackMessage =
           typeof message !== 'string' ? message[0] ?? 'Bad Request' : message;
+        break;
+      case ForbiddenException:
+        status = (exception as ForbiddenException).getStatus();
+        sendBackMessage = 'Causer is not authorised for this action';
         break;
       default:
         status = HttpStatus.INTERNAL_SERVER_ERROR;

@@ -6,11 +6,11 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
-import { CompanyModule } from './company/company.module';
-import { MachinesModule } from './machines/machines.module';
-import { TasksModule } from './tasks/tasks.module';
-import { FieldModule } from './field/field.module';
 import { WorkerModule } from './worker/worker.module';
+import { TaskModule } from './task/task.module';
+import { MachineModule } from './machine/machine.module';
+import { CompanyModule } from './company/company.module';
+import { FieldModule } from './field/field.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -36,10 +36,10 @@ import configuration from './config/configuration';
       load: [configuration],
     }),
     CompanyModule,
-    MachinesModule,
-    TasksModule,
-    FieldModule,
+    MachineModule,
+    TaskModule,
     WorkerModule,
+    FieldModule,
   ],
   controllers: [AppController],
   providers: [AppService],

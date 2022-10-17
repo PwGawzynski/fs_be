@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Company } from '../../company/entities/company.entity';
+import { map } from 'rxjs';
 
 @Entity()
 export class Machine extends BaseEntity {
@@ -49,5 +50,13 @@ export class Machine extends BaseEntity {
     nullable: false,
   })
   @JoinColumn()
-  belongToCompany: Company;
+  belongToCompany: Promise<Company>;
+
+  public async unique(byProperty) {
+    return !(await Machine.findOne({
+      where: {
+        [byProperty]: this[byProperty],
+      },
+    }));
+  }
 }

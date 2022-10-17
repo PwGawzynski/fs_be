@@ -33,20 +33,20 @@ export class Task extends BaseEntity {
     nullable: false,
   })
   @JoinColumn()
-  purchaser: User;
+  purchaser: Promise<User>;
 
   @ManyToOne(() => Company, (company) => company.tasks, {
     // if task comes from company or from client it always should have company signed
     nullable: false,
   })
   @JoinColumn()
-  company: Company;
+  company: Promise<Company>;
 
   @ManyToMany(() => Worker, {
     nullable: true,
   })
   @JoinTable()
-  workers: Worker[];
+  workers: Promise<Worker[]>;
 
   @Column({
     default: () => 'CURRENT_TIMESTAMP',

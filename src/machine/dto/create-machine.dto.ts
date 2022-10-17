@@ -8,6 +8,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { FindOrReject } from '../../ClassValidatorCustomDecorators/FindOrReject.decorator';
 import { Company } from '../../company/entities/company.entity';
 
 export class CreateMachineDto {
@@ -67,5 +68,8 @@ export class CreateMachineDto {
     message: 'Company id must be 36 characters string',
   })
   @IsUUID()
+  @FindOrReject(Company, {
+    message: 'Cannot find given company',
+  })
   companyID: string;
 }

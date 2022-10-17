@@ -7,6 +7,9 @@ import {
   Length,
   MaxLength,
 } from 'class-validator';
+import { FindOrReject } from '../../ClassValidatorCustomDecorators/FindOrReject.decorator';
+import { User } from '../../user/entities/user.entity';
+import { Company } from '../../company/entities/company.entity';
 
 export class CreateTaskDto {
   @IsString({ message: 'Task name nus be a string type' })
@@ -31,6 +34,9 @@ export class CreateTaskDto {
   @Length(36, 36, {
     message: 'Id must have 36 characters',
   })
+  @FindOrReject(User, {
+    message: 'Cannot find given purchaser',
+  })
   purchaserID: string;
 
   // Company with will be signed to task is identified by he's id number
@@ -38,6 +44,9 @@ export class CreateTaskDto {
     message: 'Company must be chosen for any task',
   })
   @Length(36, 36)
+  @FindOrReject(Company, {
+    message: 'Cannot find given company',
+  })
   companyID: string;
 
   @IsOptional()
