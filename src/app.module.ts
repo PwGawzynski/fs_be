@@ -12,6 +12,8 @@ import { MachineModule } from './machine/machine.module';
 import { CompanyModule } from './company/company.module';
 import { FieldModule } from './field/field.module';
 import { StatisticModule } from './statistic/statistic.module';
+import { WorkDayModule } from './work-day/work-day.module';
+import { NapModule } from './nap/nap.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -42,6 +44,8 @@ import configuration from './config/configuration';
     WorkerModule,
     FieldModule,
     StatisticModule,
+    WorkDayModule,
+    NapModule,
   ],
   controllers: [AppController],
   providers: [AppService],
