@@ -1,4 +1,9 @@
-import { Inject, Injectable, StreamableFile } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  StreamableFile,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { v4 as uuid } from 'uuid';
@@ -144,17 +149,31 @@ export class UserService {
     // Returns userProfile photo from file system
     // Path si constructed based on user id and userProfilePath
     // because it is obligated for creating ETag header.
-    const file = createReadStream(
-      path.join(
-        process.cwd(),
-        '/',
-        this.ConfigService.get<string>('filesPaths.userProfilePhotos'),
-        '/',
-        user.id,
-        '/',
-        user.account.profilePhotoPath + '.jpg',
-      ),
-    );
-    return new StreamableFile(file);
+    if (user.account.profilePhotoPath) {
+      const file = createReadStream(
+        path.join(
+          process.cwd(),
+          '/',
+          this.ConfigService.get<string>('filesPaths.userProfilePhotos'),
+          '/',
+          user.id,
+          '/',
+          user.account.profilePhotoPath + '.jpg',
+        ),
+      ).on('error', () => {
+        throw new InternalServerErrorException('Internal server error');
+      });
+      return new StreamableFile(file);
+    } else {
+      const defPhoto = createReadStream(
+        path.join(
+          process.cwd(),
+          '/',
+          this.ConfigService.get<string>('filesPaths.userProfilePhotos'),
+          '/defaults/defaultProfilePhoto.png',
+        ),
+      );
+      return new StreamableFile(defPhoto);
+    }
   }
 }
