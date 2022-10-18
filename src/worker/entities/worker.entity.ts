@@ -4,11 +4,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Company } from '../../company/entities/company.entity';
+import { WorkDay } from '../../work-day/entities/work-day.entity';
 
 @Entity()
 export class Worker extends BaseEntity {
@@ -31,6 +33,10 @@ export class Worker extends BaseEntity {
     default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date;
+
+  @OneToMany(() => WorkDay, (workDay) => workDay.workerId)
+  @JoinColumn()
+  workDays: WorkDay[];
 
   public async unique(byProperty) {
     return !(await Worker.findOne({
