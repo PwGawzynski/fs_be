@@ -33,15 +33,6 @@ export class Worker extends BaseEntity {
   createdAt: Date;
 
   public async unique(byProperty) {
-    console.log(
-      await Worker.findOne({
-        where: {
-          user: this[byProperty],
-        },
-      }),
-      await this.user,
-    );
-
     return !(await Worker.findOne({
       where: {
         [byProperty]: await this[byProperty],
