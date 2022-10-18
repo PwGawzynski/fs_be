@@ -6,13 +6,18 @@ import { DailyTaskStats, UniversalResponseObject, UserRole } from '../../types';
 import { Task } from '../task/entities/task.entity';
 import { Company } from '../company/entities/company.entity';
 
+export enum Stats {
+  all,
+  daily,
+}
+
 @Injectable()
 export class StatisticService {
   constructor(
     @Inject(CompanyService) private readonly companyService: CompanyService,
   ) {}
 
-  private async _queryTask(workerCompany: Company, worker: Worker) {
+  private async _queryTask(workerCompany: Company, worker: Worker, get: Stats) {
     const tasks = await Task.find({
       where: {
         company: {
@@ -30,14 +35,19 @@ export class StatisticService {
             : false;
         }),
       )
-    ).filter(
-      (dbFound) =>
-        dbFound &&
-        dbFound.performanceDay.toDateString() === new Date().toDateString(),
-    ) as Task[];
+    ).filter((dbFound) => {
+      if (get === Stats.all) {
+        return true;
+      } else {
+        return (
+          dbFound &&
+          dbFound.performanceDay.toDateString() === new Date().toDateString()
+        );
+      }
+    }) as Task[];
   }
 
-  async getDailyDoneTask(worker: Worker, user: User, role: UserRole) {
+  async getDoneTask(worker: Worker, user: User, role: UserRole, get: Stats) {
     let validatedTasks;
     if (role === UserRole.owner) {
       if (!worker)
@@ -48,7 +58,7 @@ export class StatisticService {
       const workerCompany = await worker.isWorkerAtCompany;
       await this.companyService.checkIfOwner(workerCompany, user);
       // change it to simple query for performance
-      validatedTasks = await this._queryTask(workerCompany, worker);
+      validatedTasks = await this._queryTask(workerCompany, worker, get);
     } else if (role === UserRole.worker) {
       const worker = await Worker.findOne({
         where: {
@@ -65,6 +75,7 @@ export class StatisticService {
       validatedTasks = await this._queryTask(
         await worker.isWorkerAtCompany,
         worker,
+        get,
       );
     }
     return {
