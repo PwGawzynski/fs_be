@@ -34,8 +34,7 @@ export class Worker extends BaseEntity {
   })
   createdAt: Date;
 
-  @OneToMany(() => WorkDay, (workDay) => workDay.workerId)
-  @JoinColumn()
+  @OneToMany(() => WorkDay, (workDay) => workDay.worker)
   workDays: WorkDay[];
 
   public async unique(byProperty) {

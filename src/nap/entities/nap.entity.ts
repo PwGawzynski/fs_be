@@ -9,7 +9,7 @@ import { WorkDay } from '../../work-day/entities/work-day.entity';
 
 @Entity()
 export class Nap {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
   @Column({
     default: () => 'CURRENT_TIMESTAMP',
@@ -21,5 +21,5 @@ export class Nap {
 
   @ManyToOne(() => WorkDay, (workDay) => workDay.naps)
   @JoinColumn()
-  workDay: WorkDay;
+  workDay: Promise<WorkDay>;
 }
