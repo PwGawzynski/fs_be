@@ -4,6 +4,6 @@ import { NapController } from './nap.controller';
 
 @Module({
   controllers: [NapController],
-  providers: [NapService],
+  providers: [NapService]
 })
 export class NapModule {}

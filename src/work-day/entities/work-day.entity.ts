@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { Worker } from '../../worker/entities/worker.entity';
 import { Company } from '../../company/entities/company.entity';
-import { Nap } from '../../nap/entity/nap-entity';
+import { Nap } from '../../nap/entities/nap.entity';
 
 @Entity()
 export class WorkDay extends BaseEntity {
@@ -30,4 +30,7 @@ export class WorkDay extends BaseEntity {
   @ManyToOne(() => Company, (company) => company.workDays)
   @JoinColumn()
   doneForCompany: Company;
+
+  @OneToMany(() => Nap, (nap) => nap.workDay)
+  naps: Nap[];
 }
