@@ -1,6 +1,7 @@
-import { IsDate, IsNotEmpty, IsOctal, IsOptional } from 'class-validator';
+import { IsDate, IsNotEmpty, IsOptional } from 'class-validator';
 import { Company } from '../../company/entities/company.entity';
 import { FindOrReject } from '../../ClassValidatorCustomDecorators/FindOrReject.decorator';
+import { Worker } from '../../worker/entities/worker.entity';
 
 export class CreateWorkDayDto {
   @IsOptional()
@@ -28,5 +29,14 @@ export class CreateWorkDayDto {
   @FindOrReject(Company, {
     message: 'Cannot find company with given ID',
   })
-  doneForCompany?: Company;
+  companyId?: string;
+
+  @IsOptional()
+  @IsNotEmpty({
+    message: 'Worker (id) cannot be empty if is given as param',
+  })
+  @FindOrReject(Worker, {
+    message: 'Cannot find company with given ID',
+  })
+  workerId?: string;
 }
