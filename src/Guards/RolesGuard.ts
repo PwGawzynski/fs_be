@@ -7,10 +7,18 @@ import { UserRolesObj } from '../../types';
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
-  private checkRoles(userRoles: UserRolesObj, allowedRoles: string[]) {
-    return allowedRoles
-      .map((role) => userRoles[role] ?? false)
-      .find((value) => value === true);
+  private checkRoles(
+    userRoles: UserRolesObj,
+    allowedRoles: string[],
+    paramRole?: string | undefined,
+  ) {
+    return paramRole
+      ? allowedRoles
+          .map((role) => userRoles[role] ?? false)
+          .find((value) => value === true) && userRoles[paramRole]
+      : allowedRoles
+          .map((role) => userRoles[role] ?? false)
+          .find((value) => value === true);
   }
 
   canActivate(
@@ -20,9 +28,10 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+    const paramRole = context.switchToHttp().getRequest().params.role;
     console.log(context.switchToHttp().getRequest().user);
     const userRoles = context.switchToHttp().getRequest().user
       .roles as UserRolesObj;
-    return this.checkRoles(userRoles, allowedRoles);
+    return this.checkRoles(userRoles, allowedRoles, paramRole);
   }
 }
