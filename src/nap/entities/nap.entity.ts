@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   Entity,
   JoinColumn,
@@ -8,7 +9,7 @@ import {
 import { WorkDay } from '../../work-day/entities/work-day.entity';
 
 @Entity()
-export class Nap {
+export class Nap extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
   @Column({
@@ -16,7 +17,9 @@ export class Nap {
   })
   startDate: Date;
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   endDate: Date;
 
   @ManyToOne(() => WorkDay, (workDay) => workDay.naps)
