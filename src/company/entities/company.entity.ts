@@ -12,6 +12,7 @@ import { Machine } from '../../machine/entities/machine.entity';
 import { User } from '../../user/entities/user.entity';
 import { Task } from '../../task/entities/task.entity';
 import { Worker } from '../../worker/entities/worker.entity';
+import { WorkDay } from '../../work-day/entities/work-day.entity';
 
 @Entity()
 export class Company extends BaseEntity {
@@ -52,6 +53,9 @@ export class Company extends BaseEntity {
   @OneToMany(() => Worker, (worker) => worker.isWorkerAtCompany)
   @JoinColumn()
   workers: Promise<Worker[]>;
+
+  @OneToMany(() => WorkDay, (workDay) => workDay.doneForCompany)
+  workDays: WorkDay[];
 
   public async checkUnique(byProperty: string) {
     return !!(await Company.findOne({
