@@ -7,14 +7,14 @@ import { TypeORMError } from 'typeorm';
 
 @Injectable()
 export class CompanyService {
-  public async checkIfOwner(company: Company, user: User) {
+  public async checkIfOwner(company: Company, user: User, message?: string) {
     if (
       !(await user.ownedCompanies).find(
         (oneCompany) => oneCompany.id === company.id,
       )
     )
       throw new HttpException(
-        'Given company not belong to user',
+        message ?? 'Given company not belong to user',
         HttpStatus.UNAUTHORIZED,
       );
     return true;
