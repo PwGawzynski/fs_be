@@ -4,15 +4,18 @@ import {
   Column,
   Entity,
   JoinColumn,
-  LessThan,
   ManyToOne,
-  MoreThan,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Worker } from '../../worker/entities/worker.entity';
 import { Company } from '../../company/entities/company.entity';
 import { Nap } from '../../nap/entities/nap.entity';
+
+export enum CheckDateOption {
+  ForPreviousDay,
+  ForGivenDay,
+}
 
 @Entity()
 export class WorkDay extends BaseEntity {
@@ -40,16 +43,26 @@ export class WorkDay extends BaseEntity {
   @OneToMany(() => Nap, (nap) => nap.workDay)
   naps: Promise<Nap[]>;
 
-  public async checkIfAlreadyBeenCreated() {
-    const today = new Date();
+  public async checkIfAlreadyBeenCreated(forPeriod: CheckDateOption) {
+    let date;
+
+    switch (forPeriod) {
+      case CheckDateOption.ForPreviousDay:
+        date = new Date();
+        break;
+      case CheckDateOption.ForGivenDay:
+        date = this.startDate;
+        break;
+    }
+
     return !!(await WorkDay.findOne({
       where: {
         startDate: Between(
           new Date(
             new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate(),
+              date.getFullYear(),
+              date.getMonth(),
+              date.getDate(),
               0,
             ).setHours(0),
           ),
