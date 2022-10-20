@@ -43,6 +43,50 @@ export class WorkDay extends BaseEntity {
   @OneToMany(() => Nap, (nap) => nap.workDay)
   naps: Promise<Nap[]>;
 
+  public async findForAndFill(forPeriod: CheckDateOption) {
+    let date;
+
+    switch (forPeriod) {
+      case CheckDateOption.ForPreviousDay:
+        date = new Date();
+        break;
+      case CheckDateOption.ForGivenDay:
+        date = this.startDate;
+        break;
+    }
+
+    const found = await WorkDay.findOne({
+      where: {
+        startDate: Between(
+          new Date(
+            new Date(
+              date.getFullYear(),
+              date.getMonth(),
+              date.getDate(),
+              0,
+            ).setHours(0),
+          ),
+          new Date(),
+        ),
+
+        worker: {
+          id: (await this.worker).id,
+        },
+        doneForCompany: {
+          id: (await this.doneForCompany).id,
+        },
+      },
+    });
+    if (!found) return undefined;
+    this.startDate = found.startDate;
+    this.endDate = found.endDate;
+    this.id = found.id;
+    this.worker = found.worker;
+    this.naps = found.naps;
+    this.doneForCompany = found.doneForCompany;
+    return found;
+  }
+
   public async checkIfAlreadyBeenCreated(forPeriod: CheckDateOption) {
     let date;
 
