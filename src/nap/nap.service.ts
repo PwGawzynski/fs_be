@@ -38,7 +38,10 @@ export class NapService {
           );
         workDay.worker = worker;
         workDay.doneForCompany = (await worker).isWorkerAtCompany;
-        await workDay.findForAndFill(CheckDateOption.ForPreviousDay);
+        await workDay.findForAndFill(
+          CheckDateOption.ForPreviousDay,
+          'Cannot find any open work with can be connect with new nap',
+        );
 
         nap.startDate = new Date();
         nap.workDay = Promise.resolve(workDay);

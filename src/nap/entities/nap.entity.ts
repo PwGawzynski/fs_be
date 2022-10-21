@@ -1,6 +1,5 @@
 import {
   BaseEntity,
-  Between,
   Column,
   Entity,
   IsNull,
@@ -10,6 +9,7 @@ import {
 } from 'typeorm';
 import { WorkDay } from '../../work-day/entities/work-day.entity';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { GetDatesBetweenForQuery } from '../../utils/beetwen-dates';
 
 @Entity()
 export class Nap extends BaseEntity {
@@ -33,27 +33,7 @@ export class Nap extends BaseEntity {
     if (
       !!(await Nap.findOne({
         where: {
-          startDate: Between(
-            new Date(
-              new Date(
-                startDate.getFullYear(),
-                startDate.getMonth(),
-                startDate.getDate(),
-                0,
-              ).setHours(0),
-            ),
-            new Date(
-              new Date(
-                startDate.getFullYear(),
-                startDate.getMonth(),
-                startDate.getDate(),
-                23,
-                59,
-                59,
-                999,
-              ),
-            ),
-          ),
+          startDate: GetDatesBetweenForQuery(startDate, startDate),
           endDate: IsNull(),
         },
       }))

@@ -1,6 +1,5 @@
 import {
   BaseEntity,
-  Between,
   Column,
   Entity,
   JoinColumn,
@@ -12,6 +11,7 @@ import { Worker } from '../../worker/entities/worker.entity';
 import { Company } from '../../company/entities/company.entity';
 import { Nap } from '../../nap/entities/nap.entity';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { GetDatesBetweenForQuery } from '../../utils/beetwen-dates';
 
 export enum CheckDateOption {
   ForPreviousDay,
@@ -44,40 +44,19 @@ export class WorkDay extends BaseEntity {
   @OneToMany(() => Nap, (nap) => nap.workDay)
   naps: Promise<Nap[]>;
 
-  public async findForAndFill(forPeriod: CheckDateOption) {
-    let date;
-    let endDate;
-    switch (forPeriod) {
-      case CheckDateOption.ForPreviousDay:
-        date = new Date();
-        endDate = new Date();
-        break;
-      case CheckDateOption.ForGivenDay:
-        date = this.startDate;
-        endDate = new Date(
-          date.getFullYear(),
-          date.getMonth(),
-          date.getDate(),
-          23,
-          59,
-          59,
-          999,
-        );
-        break;
-    }
-
+  public async findForAndFill(
+    forPeriod: CheckDateOption,
+    onFailMessage: string,
+  ) {
     const found = await WorkDay.findOne({
       where: {
-        startDate: Between(
-          new Date(
-            new Date(
-              date.getFullYear(),
-              date.getMonth(),
-              date.getDate(),
-              0,
-            ).setHours(0),
-          ),
-          endDate,
+        startDate: GetDatesBetweenForQuery(
+          forPeriod === CheckDateOption.ForPreviousDay
+            ? new Date()
+            : this.startDate,
+          forPeriod === CheckDateOption.ForPreviousDay
+            ? new Date()
+            : this.startDate,
         ),
 
         worker: {
@@ -88,11 +67,7 @@ export class WorkDay extends BaseEntity {
         },
       },
     });
-    if (!found)
-      throw new HttpException(
-        'Cannot find any open work with can be connect with new nap',
-        HttpStatus.BAD_REQUEST,
-      );
+    if (!found) throw new HttpException(onFailMessage, HttpStatus.BAD_REQUEST);
     this.startDate = found.startDate;
     this.endDate = found.endDate;
     this.id = found.id;
@@ -103,39 +78,15 @@ export class WorkDay extends BaseEntity {
   }
 
   public async checkIfAlreadyBeenCreated(forPeriod: CheckDateOption) {
-    let date;
-    let endDate;
-    switch (forPeriod) {
-      case CheckDateOption.ForPreviousDay:
-        date = new Date();
-        endDate = new Date();
-        break;
-      case CheckDateOption.ForGivenDay:
-        date = this.startDate;
-        endDate = new Date(
-          date.getFullYear(),
-          date.getMonth(),
-          date.getDate(),
-          23,
-          59,
-          59,
-          999,
-        );
-        break;
-    }
-
     const found = !!(await WorkDay.findOne({
       where: {
-        startDate: Between(
-          new Date(
-            new Date(
-              date.getFullYear(),
-              date.getMonth(),
-              date.getDate(),
-              0,
-            ).setHours(0),
-          ),
-          endDate,
+        startDate: GetDatesBetweenForQuery(
+          forPeriod === CheckDateOption.ForPreviousDay
+            ? new Date()
+            : this.startDate,
+          forPeriod === CheckDateOption.ForPreviousDay
+            ? new Date()
+            : this.startDate,
         ),
 
         worker: {
