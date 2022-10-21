@@ -55,17 +55,11 @@ export class WorkDayService {
         break;
     }
 
-    if (
-      await workDay.checkIfAlreadyBeenCreated(
-        role === UserRole.owner
-          ? CheckDateOption.ForGivenDay
-          : CheckDateOption.ForPreviousDay,
-      )
-    )
-      throw new HttpException(
-        'You have already open work day for today',
-        HttpStatus.CONFLICT,
-      );
+    await workDay.checkIfAlreadyBeenCreated(
+      role === UserRole.owner
+        ? CheckDateOption.ForGivenDay
+        : CheckDateOption.ForPreviousDay,
+    );
 
     return workDay
       .save()
