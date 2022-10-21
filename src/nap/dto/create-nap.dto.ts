@@ -1,6 +1,6 @@
 import { IsDate, IsNotEmpty, IsOptional } from 'class-validator';
 import { FindOrReject } from '../../ClassValidatorCustomDecorators/FindOrReject.decorator';
-import { Worker } from '../../worker/entities/worker.entity';
+import { WorkDay } from '../../work-day/entities/work-day.entity';
 
 export class CreateNapDto {
   @IsOptional()
@@ -25,6 +25,8 @@ export class CreateNapDto {
   @IsNotEmpty({
     message: 'Worker Id must not be empty if it is given',
   })
-  @FindOrReject(Worker)
+  @FindOrReject(WorkDay, {
+    message: 'Given WorkDay cannot be connect with any existing workDay',
+  })
   workDayId?: string;
 }
