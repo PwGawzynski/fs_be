@@ -128,7 +128,7 @@ export class WorkDayService {
   }
 
   async closeWorkDay(role: UserRole, data: CloseWorkDayDto, user: User) {
-    let workDay;
+    let workDay: WorkDay;
     switch (role) {
       case UserRole.worker:
         workDay = await WorkDay.findOne({
@@ -148,6 +148,19 @@ export class WorkDayService {
           );
         workDay.endDate = new Date();
         break;
+      case UserRole.owner:
+        workDay = data.workDayId as unknown as WorkDay;
+        await this.companyService.checkIfOwner(
+          await workDay.doneForCompany,
+          user,
+          'Causer is not owner of company assigned to given work day',
+        );
+        workDay.endDate = data.endDate ?? new Date();
+        if (workDay.startDate >= workDay.endDate)
+          throw new HttpException(
+            'End date cannot be les than start date',
+            HttpStatus.BAD_REQUEST,
+          );
     }
 
     return workDay
