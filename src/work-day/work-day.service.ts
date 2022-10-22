@@ -1,15 +1,24 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateWorkDayDto } from './dto/create-work-day.dto';
 import { User } from '../user/entities/user.entity';
-import { UniversalResponseObject, UserRole } from '../../types';
-import { CheckDateOption, WorkDay } from './entities/work-day.entity';
+import {
+  GetCurrentlyOpenWorkDayRes,
+  UniversalResponseObject,
+  UserRole,
+} from '../../types';
+import {
+  CheckDateOption,
+  FindMethodOption,
+  WorkDay,
+} from './entities/work-day.entity';
 import { Worker } from '../worker/entities/worker.entity';
-import { TypeORMError } from 'typeorm';
+import { IsNull, TypeORMError } from 'typeorm';
 import { CompanyService } from '../company/company.service';
 import { Company } from '../company/entities/company.entity';
 import { GetWorkDayDto } from './dto/get-work-day.dto';
 import { CloseWorkDayDto } from './dto/close-work-day.dto';
 import { GetDatesBetweenForQuery } from '../utils/beetwen-dates';
+import { NapResObj } from '../../types/Nap/NapResObj';
 
 @Injectable()
 export class WorkDayService {
@@ -94,6 +103,7 @@ export class WorkDayService {
         await workDay.findForAndFill(
           CheckDateOption.ForPreviousDay,
           'Any open work day dont exist',
+          FindMethodOption.ForNullEndDate,
         );
         break;
       case UserRole.owner:
@@ -114,6 +124,7 @@ export class WorkDayService {
         await workDay.findForAndFill(
           CheckDateOption.ForGivenDay,
           'Cannot find any open work day for given params',
+          FindMethodOption.ForEnyEndDate,
         );
     }
 
@@ -122,8 +133,14 @@ export class WorkDayService {
       data: {
         startDate: workDay.startDate,
         id: workDay.id,
-        naps: await workDay.naps,
-      },
+        naps: (await workDay.naps).map((nap) => {
+          return {
+            id: nap.id,
+            startDate: nap.startDate,
+            endDate: nap.endDate,
+          } as NapResObj;
+        }),
+      } as GetCurrentlyOpenWorkDayRes,
     } as UniversalResponseObject;
   }
 
@@ -139,6 +156,7 @@ export class WorkDayService {
               },
             },
             startDate: GetDatesBetweenForQuery(new Date(), new Date()),
+            endDate: IsNull(),
           },
         });
         if (!workDay)
@@ -147,6 +165,7 @@ export class WorkDayService {
             HttpStatus.BAD_REQUEST,
           );
         workDay.endDate = new Date();
+        console.log(workDay);
         break;
       case UserRole.owner:
         workDay = data.workDayId as unknown as WorkDay;

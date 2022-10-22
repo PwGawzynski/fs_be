@@ -2,7 +2,11 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { UniversalResponseObject, UserRole } from '../../types';
 import { User } from '../user/entities/user.entity';
 import { CreateNapDto } from './dto/create-nap.dto';
-import { CheckDateOption, WorkDay } from '../work-day/entities/work-day.entity';
+import {
+  CheckDateOption,
+  FindMethodOption,
+  WorkDay,
+} from '../work-day/entities/work-day.entity';
 import { Nap } from './entities/nap.entity';
 import { Worker } from '../worker/entities/worker.entity';
 import { CompanyService } from '../company/company.service';
@@ -41,6 +45,7 @@ export class NapService {
         await workDay.findForAndFill(
           CheckDateOption.ForPreviousDay,
           'Cannot find any open work with can be connect with new nap',
+          FindMethodOption.ForNullEndDate,
         );
 
         nap.startDate = new Date();
