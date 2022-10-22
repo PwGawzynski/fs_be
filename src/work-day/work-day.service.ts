@@ -71,6 +71,7 @@ export class WorkDayService {
       role === UserRole.owner
         ? CheckDateOption.ForGivenDay
         : CheckDateOption.ForPreviousDay,
+      FindMethodOption.ForNullEndDate,
     );
 
     return workDay

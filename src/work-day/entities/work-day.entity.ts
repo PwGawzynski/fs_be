@@ -111,26 +111,56 @@ export class WorkDay extends BaseEntity {
     return found;
   }
 
-  public async checkIfAlreadyBeenCreated(forPeriod: CheckDateOption) {
-    const found = !!(await WorkDay.findOne({
-      where: {
-        startDate: GetDatesBetweenForQuery(
-          forPeriod === CheckDateOption.ForPreviousDay
-            ? new Date()
-            : this.startDate,
-          forPeriod === CheckDateOption.ForPreviousDay
-            ? new Date()
-            : this.startDate,
-        ),
+  public async checkIfAlreadyBeenCreated(
+    forPeriod: CheckDateOption,
+    forEndDateType: FindMethodOption,
+  ) {
+    let found;
+    switch (forEndDateType) {
+      case FindMethodOption.ForNullEndDate:
+        found = !!(await WorkDay.findOne({
+          where: {
+            startDate: GetDatesBetweenForQuery(
+              forPeriod === CheckDateOption.ForPreviousDay
+                ? new Date()
+                : this.startDate,
+              forPeriod === CheckDateOption.ForPreviousDay
+                ? new Date()
+                : this.startDate,
+            ),
 
-        worker: {
-          id: (await this.worker).id,
-        },
-        doneForCompany: {
-          id: (await this.doneForCompany).id,
-        },
-      },
-    }));
+            worker: {
+              id: (await this.worker).id,
+            },
+            doneForCompany: {
+              id: (await this.doneForCompany).id,
+            },
+            endDate: IsNull(),
+          },
+        }));
+        break;
+      case FindMethodOption.ForEnyEndDate:
+        found = !!(await WorkDay.findOne({
+          where: {
+            startDate: GetDatesBetweenForQuery(
+              forPeriod === CheckDateOption.ForPreviousDay
+                ? new Date()
+                : this.startDate,
+              forPeriod === CheckDateOption.ForPreviousDay
+                ? new Date()
+                : this.startDate,
+            ),
+
+            worker: {
+              id: (await this.worker).id,
+            },
+            doneForCompany: {
+              id: (await this.doneForCompany).id,
+            },
+          },
+        }));
+        break;
+    }
     if (found)
       throw new HttpException(
         'You have already open work day for today',
