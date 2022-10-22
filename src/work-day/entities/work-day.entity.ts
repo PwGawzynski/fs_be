@@ -2,6 +2,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  IsNull,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -16,6 +17,10 @@ import { GetDatesBetweenForQuery } from '../../utils/beetwen-dates';
 export enum CheckDateOption {
   ForPreviousDay,
   ForGivenDay,
+}
+export enum FindMethodOption {
+  ForNullEndDate,
+  ForEnyEndDate,
 }
 
 @Entity()
@@ -47,27 +52,56 @@ export class WorkDay extends BaseEntity {
   public async findForAndFill(
     forPeriod: CheckDateOption,
     onFailMessage: string,
+    forEndDateType: FindMethodOption,
   ) {
-    const found = await WorkDay.findOne({
-      where: {
-        startDate: GetDatesBetweenForQuery(
-          forPeriod === CheckDateOption.ForPreviousDay
-            ? new Date()
-            : this.startDate,
-          forPeriod === CheckDateOption.ForPreviousDay
-            ? new Date()
-            : this.startDate,
-        ),
+    let found;
+    switch (forEndDateType) {
+      case FindMethodOption.ForNullEndDate:
+        found = await WorkDay.findOne({
+          where: {
+            startDate: GetDatesBetweenForQuery(
+              forPeriod === CheckDateOption.ForPreviousDay
+                ? new Date()
+                : this.startDate,
+              forPeriod === CheckDateOption.ForPreviousDay
+                ? new Date()
+                : this.startDate,
+            ),
 
-        worker: {
-          id: (await this.worker).id,
-        },
-        doneForCompany: {
-          id: (await this.doneForCompany).id,
-        },
-      },
-    });
-    if (!found) throw new HttpException(onFailMessage, HttpStatus.BAD_REQUEST);
+            worker: {
+              id: (await this.worker).id,
+            },
+            doneForCompany: {
+              id: (await this.doneForCompany).id,
+            },
+            endDate: IsNull(),
+          },
+        });
+        break;
+      case FindMethodOption.ForEnyEndDate:
+        found = await WorkDay.findOne({
+          where: {
+            startDate: GetDatesBetweenForQuery(
+              forPeriod === CheckDateOption.ForPreviousDay
+                ? new Date()
+                : this.startDate,
+              forPeriod === CheckDateOption.ForPreviousDay
+                ? new Date()
+                : this.startDate,
+            ),
+
+            worker: {
+              id: (await this.worker).id,
+            },
+            doneForCompany: {
+              id: (await this.doneForCompany).id,
+            },
+          },
+        });
+        break;
+    }
+    console.log(found);
+    if (!found) throw new HttpException(onFailMessage, HttpStatus.NO_CONTENT);
     this.startDate = found.startDate;
     this.endDate = found.endDate;
     this.id = found.id;
