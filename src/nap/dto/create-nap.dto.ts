@@ -23,7 +23,7 @@ export class CreateNapDto {
 
   @IsOptional()
   @IsNotEmpty({
-    message: 'Worker Id must not be empty if it is given',
+    message: 'WorkerDay Id must not be empty if it is given',
   })
   @FindOrReject(WorkDay, {
     message: 'Given WorkDay cannot be connect with any existing workDay',
