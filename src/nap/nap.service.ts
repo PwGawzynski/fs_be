@@ -10,6 +10,7 @@ import {
 import { Nap } from './entities/nap.entity';
 import { Worker } from '../worker/entities/worker.entity';
 import { CompanyService } from '../company/company.service';
+import { CloseNapDto } from './dto/closeNap.dto';
 
 @Injectable()
 export class NapService {
@@ -22,7 +23,7 @@ export class NapService {
 
     switch (role) {
       case UserRole.worker:
-        if (data)
+        if (data && typeof data === 'object' && Object.keys(data).length)
           throw new HttpException(
             'Body is not allowed for this ask',
             HttpStatus.BAD_REQUEST,
@@ -74,6 +75,43 @@ export class NapService {
         break;
     }
 
+    return nap
+      .save()
+      .then(() => {
+        return { status: true } as UniversalResponseObject;
+      })
+      .catch(() => {
+        throw new TypeError('Cannot save');
+      });
+  }
+
+  async closeNap(user: User, role: UserRole, data?: CloseNapDto) {
+    let nap: Nap;
+    switch (role) {
+      case UserRole.worker:
+        nap = await Nap.findOpenForDateOrReject(new Date());
+        nap.endDate = new Date();
+        break;
+      case UserRole.owner:
+        if (!data?.endDate)
+          throw new HttpException(
+            'End date param must be given for ask as owner',
+            HttpStatus.BAD_REQUEST,
+          );
+        nap = data.napId as unknown as Nap;
+        const workDay = await nap.workDay;
+        if (!workDay)
+          throw new HttpException(
+            'Cannot find work day for given nap',
+            HttpStatus.BAD_REQUEST,
+          );
+        await this.companyService.checkIfOwner(
+          await workDay.doneForCompany,
+          user,
+          'Causer unauthorised, company issue',
+        );
+        nap.endDate = data.endDate;
+    }
     return nap
       .save()
       .then(() => {
