@@ -4,6 +4,7 @@ import {
   Param,
   ParseEnumPipe,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { NapService } from './nap.service';
@@ -14,6 +15,7 @@ import { UserRole } from '../../types';
 import { UserObj } from '../decorators/user-obj.decorator';
 import { User } from '../user/entities/user.entity';
 import { CreateNapDto } from './dto/create-nap.dto';
+import { CloseNapDto } from './dto/closeNap.dto';
 
 @Controller('nap/:role')
 export class NapController {
@@ -27,12 +29,17 @@ export class NapController {
     @Body() data: CreateNapDto,
     @UserObj() user: User,
   ) {
-    switch (role) {
-      case UserRole.owner:
-        return this.napService.createNewNap(user, role, data);
-        break;
-      case UserRole.worker:
-        return this.napService.createNewNap(user, role);
-    }
+    return this.napService.createNewNap(user, role, data);
+  }
+
+  @Put('close')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @AllowOnlyIf('owner', 'worker')
+  closeNap(
+    @Param('role', new ParseEnumPipe(UserRole)) role: UserRole,
+    @Body() data: CloseNapDto,
+    @UserObj() user: User,
+  ) {
+    return this.napService.closeNap(user, role, data);
   }
 }
