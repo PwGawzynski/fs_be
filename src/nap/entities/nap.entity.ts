@@ -45,4 +45,20 @@ export class Nap extends BaseEntity {
     }
     return true;
   }
+
+  public static async findOpenForDateOrReject(startDate: Date) {
+    const found = await Nap.findOne({
+      where: {
+        startDate: GetDatesBetweenForQuery(startDate, startDate),
+        endDate: IsNull(),
+      },
+    });
+    if (!found) {
+      throw new HttpException(
+        'Cannot find any open nap',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return found;
+  }
 }
