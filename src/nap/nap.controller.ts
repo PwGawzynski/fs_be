@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   ParseEnumPipe,
   Post,
@@ -16,6 +17,7 @@ import { UserObj } from '../decorators/user-obj.decorator';
 import { User } from '../user/entities/user.entity';
 import { CreateNapDto } from './dto/create-nap.dto';
 import { CloseNapDto } from './dto/closeNap.dto';
+import { GetCountedNapsTimeDto } from './dto/get-counted-naps-time.dto';
 
 @Controller('nap/:role')
 export class NapController {
@@ -41,5 +43,16 @@ export class NapController {
     @UserObj() user: User,
   ) {
     return this.napService.closeNap(user, role, data);
+  }
+
+  @Get('allTimeInMs')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @AllowOnlyIf('owner', 'worker')
+  napTimeForWorkDay(
+    @Param('role', new ParseEnumPipe(UserRole)) role: UserRole,
+    @Body() data: GetCountedNapsTimeDto,
+    @UserObj() user: User,
+  ) {
+    return this.napService.napTimeForWorkDay(user, role, data);
   }
 }
