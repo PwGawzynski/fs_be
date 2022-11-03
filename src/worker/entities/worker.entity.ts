@@ -11,6 +11,7 @@ import {
 import { User } from '../../user/entities/user.entity';
 import { Company } from '../../company/entities/company.entity';
 import { WorkDay } from '../../work-day/entities/work-day.entity';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Entity()
 export class Worker extends BaseEntity {
@@ -43,5 +44,21 @@ export class Worker extends BaseEntity {
         [byProperty]: await this[byProperty],
       },
     }));
+  }
+
+  public static async FindByUserId(userId: string) {
+    const foundWorker = await Worker.findOne({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+    });
+    if (!foundWorker)
+      throw new HttpException(
+        'Cannot find worker with this Id',
+        HttpStatus.BAD_REQUEST,
+      );
+    return foundWorker;
   }
 }

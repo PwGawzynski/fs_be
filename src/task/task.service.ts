@@ -3,11 +3,16 @@ import { Task } from './entities/task.entity';
 import { User } from '../user/entities/user.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { Company } from '../company/entities/company.entity';
-import { UniversalResponseObject } from '../../types';
+import {
+  SerializedTaskResponse,
+  UniversalResponseObject,
+  UserRole,
+} from '../../types';
 import { TypeORMError } from 'typeorm';
 import { CompanyService } from '../company/company.service';
 import { AssignWorkersDto } from './dto/update-task.dto';
 import { Worker } from '../worker/entities/worker.entity';
+import { GetUndoneTasksForDateDto } from './dto/getUndoneTasksForDate-dto';
 
 @Injectable()
 export class TaskService {
@@ -72,5 +77,70 @@ export class TaskService {
       .catch(() => {
         throw new TypeORMError('Cannot save');
       });
+  }
+
+  async getAllUndoneForDate(
+    role: UserRole,
+    data: GetUndoneTasksForDateDto,
+    user: User,
+  ) {
+    let tasks: Task[];
+    let worker: Worker;
+    switch (role) {
+      case UserRole.worker:
+        if (data.performanceDay ?? data.companyID ?? data.workerID)
+          throw new HttpException(
+            'Cannot serve request with body, when request as Worker',
+            HttpStatus.CONFLICT,
+          );
+        worker = await Worker.FindByUserId(user.id);
+        tasks = await Task.findAllByWorkerID(worker);
+        break;
+      case UserRole.owner:
+        if (!(data.performanceDay ?? data.companyID ?? data.workerID))
+          throw new HttpException(
+            'All params must be defined when request as owner',
+            HttpStatus.CONFLICT,
+          );
+        worker = data.workerID as unknown as Worker;
+        await this.companyService.checkIfOwner(
+          data.companyID as unknown as Company,
+          user,
+        );
+
+        if (
+          !(await user.ownedCompanies).find(
+            async (company) =>
+              company.id === (await worker.isWorkerAtCompany).id,
+          )
+        )
+          throw new HttpException(
+            'Worker is not assigned to any of your companies',
+            HttpStatus.CONFLICT,
+          );
+
+        tasks = await Task.findAllByProperties({
+          where: {
+            performanceDay: data.performanceDay,
+            company: { id: (data.companyID as unknown as Company).id },
+            workers: {
+              id: (data.workerID as unknown as Worker).id,
+            },
+          },
+        });
+        break;
+    }
+    const serializedTasks = tasks.map(
+      (task) =>
+        ({
+          id: task.id,
+          name: task.name,
+          description: task.description,
+        } as SerializedTaskResponse),
+    );
+    return {
+      status: true,
+      data: serializedTasks,
+    } as UniversalResponseObject;
   }
 }
