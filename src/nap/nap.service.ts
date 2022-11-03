@@ -11,6 +11,9 @@ import { Nap } from './entities/nap.entity';
 import { Worker } from '../worker/entities/worker.entity';
 import { CompanyService } from '../company/company.service';
 import { CloseNapDto } from './dto/closeNap.dto';
+import { countMsBetweenDates } from '../utils/countMsBetweenDates';
+import { GetCountedNapsTimeDto } from './dto/get-counted-naps-time.dto';
+import { CountedNapsTimeRes } from '../../types';
 
 @Injectable()
 export class NapService {
@@ -89,7 +92,7 @@ export class NapService {
     let nap: Nap;
     switch (role) {
       case UserRole.worker:
-        nap = await Nap.findOpenForDateOrReject(new Date());
+        nap = await Nap.findOpenForDateOrReject(new Date(), user);
         nap.endDate = new Date();
         break;
       case UserRole.owner:
@@ -120,5 +123,53 @@ export class NapService {
       .catch(() => {
         throw new TypeError('Cannot save');
       });
+  }
+
+  async napTimeForWorkDay(
+    user: User,
+    role: UserRole,
+    data: GetCountedNapsTimeDto,
+  ) {
+    let naps: Nap[];
+    switch (role) {
+      case UserRole.worker:
+        naps = await Nap.findAllOpenForPeriodAndUser(
+          new Date(),
+          new Date(),
+          user,
+        );
+        break;
+      case UserRole.owner:
+        if (!(data.workDayId && data.startDate))
+          throw new HttpException(
+            'Not enough parameters, Start date has not been given',
+            HttpStatus.BAD_REQUEST,
+          );
+        const reqUser = await (
+          await (data.workDayId as unknown as WorkDay).worker
+        ).user;
+        naps = await Nap.findAllOpenForPeriodAndUser(
+          data.startDate,
+          data.endDate ?? data.startDate,
+          reqUser,
+        );
+    }
+
+    const ms = naps.reduce((previousValue, currentValue) => {
+      if (currentValue.endDate) {
+        return (
+          previousValue +
+          countMsBetweenDates(currentValue.startDate, currentValue.endDate)
+        );
+      }
+      return previousValue;
+    }, 0);
+    return {
+      status: true,
+      data: {
+        //db only return dates with second precision
+        allCountedNapsTime: ms * 1000,
+      } as CountedNapsTimeRes,
+    } as UniversalResponseObject;
   }
 }
