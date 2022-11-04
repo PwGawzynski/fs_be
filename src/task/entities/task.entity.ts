@@ -51,7 +51,8 @@ export class Task extends BaseEntity {
   workers: Promise<Worker[]>;
 
   @Column({
-    default: () => 'CURRENT_TIMESTAMP',
+    //default: () => 'CURRENT_TIMESTAMP',
+    nullable: true,
   })
   startTime: Date;
 
