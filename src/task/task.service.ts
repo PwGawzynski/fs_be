@@ -130,14 +130,17 @@ export class TaskService {
         });
         break;
     }
-    const serializedTasks = tasks.map(
-      (task) =>
-        ({
-          id: task.id,
-          name: task.name,
-          description: task.description,
-        } as SerializedTaskResponse),
-    );
+    const serializedTasks = tasks
+      .filter((tasks) => !tasks.isDone)
+      .map(
+        (task) =>
+          ({
+            performanceDay: task.performanceDay,
+            id: task.id,
+            name: task.name,
+            description: task.description,
+          } as SerializedTaskResponse),
+      );
     return {
       status: true,
       data: serializedTasks,
