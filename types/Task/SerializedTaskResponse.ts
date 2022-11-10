@@ -3,4 +3,5 @@ export interface SerializedTaskResponse {
   name: string;
   description: string;
   performanceDay: Date;
+  startDate: Date;
 }
