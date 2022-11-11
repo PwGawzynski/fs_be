@@ -140,6 +140,7 @@ export class TaskService {
             id: task.id,
             name: task.name,
             description: task.description,
+            startDate: task.startTime,
           } as SerializedTaskResponse),
       );
     return {
