@@ -14,6 +14,7 @@ import { AssignWorkersDto } from './dto/update-task.dto';
 import { Worker } from '../worker/entities/worker.entity';
 import { GetUndoneTasksForDateDto } from './dto/getUndoneTasksForDate-dto';
 import { StartTaskDto } from './dto/startTask-dto';
+import { EndTaskDto } from './dto/endTask-dto';
 
 @Injectable()
 export class TaskService {
@@ -178,6 +179,40 @@ export class TaskService {
             HttpStatus.UNAUTHORIZED,
           );
         task.startTime = data?.startDate ?? new Date();
+    }
+    task.save();
+    return { status: true } as UniversalResponseObject;
+  }
+
+  async endTask(role: UserRole, data: EndTaskDto, user: User) {
+    const task = data.taskId as unknown as Task;
+    const taskCompany = await task.company;
+    const taskWorkers = await task.workers;
+    switch (role) {
+      case UserRole.worker:
+        const worker = await Worker.FindByUserId(user.id);
+        const workerCompany = await worker.isWorkerAtCompany;
+        if (
+          taskCompany.id !== workerCompany.id &&
+          !taskWorkers.find((taskWorker) => taskWorker.id === worker.id)
+        )
+          throw new HttpException(
+            `You haven't got access to this task`,
+            HttpStatus.UNAUTHORIZED,
+          );
+        task.endTIme = new Date();
+        break;
+      case UserRole.owner:
+        if (
+          !(await user.ownedCompanies).find(
+            (company) => company.id === taskCompany.id,
+          )
+        )
+          throw new HttpException(
+            `You haven't got access to this task`,
+            HttpStatus.UNAUTHORIZED,
+          );
+        task.endTIme = data?.endDate ?? new Date();
     }
     task.save();
     return { status: true } as UniversalResponseObject;
