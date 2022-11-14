@@ -19,6 +19,7 @@ import { AssignWorkersDto } from './dto/update-task.dto';
 import { UserRole } from '../../types';
 import { GetUndoneTasksForDateDto } from './dto/getUndoneTasksForDate-dto';
 import { StartTaskDto } from './dto/startTask-dto';
+import { EndTaskDto } from './dto/endTask-dto';
 
 @Controller('task')
 export class TaskController {
@@ -58,5 +59,16 @@ export class TaskController {
     @Body() data?: StartTaskDto,
   ) {
     return this.taskService.startTask(role, data, user);
+  }
+
+  @Post('end/:role')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @AllowOnlyIf('owner', 'worker')
+  endTask(
+    @Param('role', new ParseEnumPipe(UserRole)) role: UserRole,
+    @UserObj() user: User,
+    @Body() data?: EndTaskDto,
+  ) {
+    return this.taskService.endTask(role, data, user);
   }
 }
