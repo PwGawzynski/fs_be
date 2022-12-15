@@ -14,6 +14,7 @@ import { FieldModule } from './field/field.module';
 import { StatisticModule } from './statistic/statistic.module';
 import { WorkDayModule } from './work-day/work-day.module';
 import { NapModule } from './nap/nap.module';
+import { SmsModule } from './sms/sms.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -46,6 +47,7 @@ import configuration from './config/configuration';
     StatisticModule,
     WorkDayModule,
     NapModule,
+    SmsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

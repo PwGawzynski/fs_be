@@ -214,6 +214,7 @@ export class TaskService {
           );
         task.endTIme = data?.endDate ?? new Date();
     }
+    task.isDone = true;
     task.save();
     return { status: true } as UniversalResponseObject;
   }

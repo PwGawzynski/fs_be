@@ -5,12 +5,29 @@ import { User } from '../user/entities/user.entity';
 import { UniversalResponseObject } from '../../types';
 import { HttpService } from '@nestjs/axios';
 import { TypeORMError } from 'typeorm';
-
+import * as convert from 'xml-js';
 @Injectable()
 export class FieldService {
   constructor(private readonly httpService: HttpService) {}
-  _getFiledArea() {
-    return 2.31;
+  private async _getFiledArea(data: CreateFieldDto) {
+    //TODO this ask can give us field id so use it on get plod id
+    const fieldHa = (
+      await this.httpService.axiosRef.get(
+        `https://integracja.gugik.gov.pl/cgi-bin/KrajowaIntegracjaEwidencjiGruntow?SERVICE=WMS&request=GetFeatureInfo&version=1.3.0&layers=obreby,dzialki,geoportal&styles=&crs=EPSG:2180&bbox=${
+          data.longitude + 0.01
+        },${data.latitude + 0.01},${data.longitude + 0.02},${
+          data.latitude + 0.02
+        }&width=10&height=10&format=image/png&transparent=true&query_layers=geoportal&i=1&j=1&INFO_FORMAT=text/xml`,
+      )
+    ).data as unknown as string;
+    const area = Number(
+      convert
+        .xml2js(fieldHa)
+        .elements[0].elements[0].elements[0].elements.filter((elementObj) =>
+          elementObj.attributes.Name.includes('(ha)'),
+        )[0].elements[0].text as string,
+    );
+    return area;
   }
 
   private async _getPlodId(data: CreateFieldDto): Promise<string | false> {
@@ -30,7 +47,7 @@ export class FieldService {
 
   async createNewField(data: CreateFieldDto, user: User) {
     const field = new Field();
-    field.area = this._getFiledArea();
+    field.area = await this._getFiledArea(data);
     const plodId = await this._getPlodId(data);
     if (!plodId)
       throw new HttpException(
